@@ -1,9 +1,7 @@
-// models/review.go
 package models
 
 import "time"
 
-// DanhGia represents the 'danhgia' (review) table
 type DanhGia struct {
 	MaDanhGia   int       `json:"ma_danh_gia" db:"MaDanhGia"`
 	MaSanPham   int       `json:"ma_san_pham" db:"MaSanPham"`

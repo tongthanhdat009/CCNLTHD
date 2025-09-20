@@ -1,52 +1,25 @@
 package repositories
 
 import (
-	"database/sql"
-	"fmt"
-
-	"github.com/tongthanhdat009/CCNLTHD/internal/models"
+    "github.com/tongthanhdat009/CCNLTHD/internal/models"
+    "gorm.io/gorm"
 )
 
-type HangHoaRepository struct {
-	db *sql.DB
+type HangHoaRepository interface {
+    GetAll() ([]models.HangHoa, error)
 }
 
-func NewHangHoaRepository(db *sql.DB) *HangHoaRepository {
-	return &HangHoaRepository{db: db}
+type hangHoaRepo struct {
+    db *gorm.DB
 }
 
-func (r *HangHoaRepository) GetAllHangHoa() ([]models.HangHoa, error) {
-	query := `
-		SELECT *
-		FROM hanghoa
-	`
-	
-	rows, err := r.db.Query(query)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
+func NewHangHoaRepository(db *gorm.DB) HangHoaRepository {
+    return &hangHoaRepo{db: db}
+}
 
-	var hangHoas []models.HangHoa
-	for rows.Next() {
-		var hh models.HangHoa
-		err := rows.Scan(
-			&hh.MaHangHoa,
-			&hh.TenHangHoa,
-			&hh.MaHang,
-			&hh.MaDanhMuc,
-			&hh.Mau,
-			&hh.MoTa,
-			&hh.TrangThai,
-			&hh.MaKhuyenMai,
-			&hh.AnhDaiDien,
-		)
-		if err != nil {
-			return nil, err
-		}
-		hangHoas = append(hangHoas, hh)
-		fmt.Printf("Retrieved HangHoa: %+v\n", hh)
-	}
-
-	return hangHoas, nil
+func (r *hangHoaRepo) GetAll() ([]models.HangHoa, error) {
+    var hangHoas []models.HangHoa
+    // Sử dụng Preload để tải các dữ liệu liên quan
+    err := r.db.Preload("Hang").Preload("DanhMuc").Preload("BienThes").Find(&hangHoas).Error
+    return hangHoas, err
 }
