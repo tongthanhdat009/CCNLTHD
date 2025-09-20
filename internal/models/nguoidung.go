@@ -1,25 +1,43 @@
 package models
 
-import "time"
+import (
+    "database/sql"
+    "time"
+)
 
 type NguoiDung struct {
-	MaNguoiDung int       `json:"ma_nguoi_dung" db:"MaNguoiDung"`
-	TenDangNhap string    `json:"ten_dang_nhap" db:"TenDangNhap"`
-	MatKhau     string    `json:"mat_khau" db:"MatKhau"`
-	HoTen       string    `json:"ho_ten" db:"HoTen"`
-	Email       string    `json:"email" db:"Email"`
-	SoDienThoai string    `json:"so_dien_thoai" db:"SoDienThoai"`
-	TinhThanh   string    `json:"tinh_thanh" db:"TinhThanh"`
-	QuanHuyen   string    `json:"quan_huyen" db:"QuanHuyen"`
-	PhuongXa    string    `json:"phuong_xa" db:"PhuongXa"`
-	DuongSoNha  string    `json:"duong_so_nha" db:"DuongSoNha"`
-	MaQuyen     int       `json:"ma_quyen" db:"MaQuyen"`
-	NgayTao     time.Time `json:"ngay_tao" db:"NgayTao"`
-	NgayCapNhat time.Time `json:"ngay_cap_nhat" db:"NgayCapNhat"`
+    MaNguoiDung int       `gorm:"primaryKey;column:MaNguoiDung" json:"ma_nguoi_dung"`
+    TenDangNhap string    `gorm:"column:TenDangNhap" json:"ten_dang_nhap"`
+    MatKhau     string    `gorm:"column:MatKhau" json:"-"` // Thường không trả về mật khẩu trong JSON
+    HoTen       string    `gorm:"column:HoTen" json:"ho_ten"`
+    Email       string    `gorm:"column:Email" json:"email"`
+    SoDienThoai string    `gorm:"column:SoDienThoai" json:"so_dien_thoai"`
+    TinhThanh   sql.NullString `gorm:"column:TinhThanh" json:"tinh_thanh"`
+    QuanHuyen   sql.NullString `gorm:"column:QuanHuyen" json:"quan_huyen"`
+    PhuongXa    sql.NullString `gorm:"column:PhuongXa" json:"phuong_xa"`
+    DuongSoNha  sql.NullString `gorm:"column:DuongSoNha" json:"duong_so_nha"`
+    MaQuyen     int       `gorm:"column:MaQuyen" json:"-"` // Ẩn đi để dùng struct Quyen bên dưới
+    NgayTao     time.Time `gorm:"column:NgayTao;autoCreateTime" json:"ngay_tao"`
+    NgayCapNhat time.Time `gorm:"column:NgayCapNhat;autoUpdateTime" json:"ngay_cap_nhat"`
+
+    // --- Mối quan hệ Many-to-One ---
+    // Người dùng này thuộc về quyền nào
+    Quyen Quyen `gorm:"foreignKey:MaQuyen" json:"quyen,omitempty"`
 }
 
-// Quyen represents the 'quyen' (role) table
 type Quyen struct {
-	MaQuyen  int    `json:"ma_quyen" db:"MaQuyen"`
-	TenQuyen string `json:"ten_quyen" db:"TenQuyen"`
+    MaQuyen  int    `gorm:"primaryKey;column:MaQuyen" json:"ma_quyen"`
+    TenQuyen string `gorm:"column:TenQuyen" json:"ten_quyen"`
+
+    // Thêm mối quan hệ nhiều-nhiều
+    ChiTietChucNangs []*ChiTietChucNang `gorm:"many2many:phanquyen;foreignKey:MaQuyen;joinForeignKey:MaQuyen;References:MaChiTietChucNang;joinReferences:MaChiTietChucNang" json:"chi_tiet_chuc_nangs,omitempty"`
+}
+
+// --- Cung cấp tên bảng cho GORM ---
+func (NguoiDung) TableName() string {
+    return "NguoiDung"
+}
+
+func (Quyen) TableName() string {
+    return "Quyen"
 }

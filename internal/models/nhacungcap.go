@@ -1,9 +1,14 @@
 package models
 
 type NhaCungCap struct {
-	MaNCC       int    `json:"ma_ncc" db:"MaNCC"`
-	TenNCC      string `json:"ten_ncc" db:"TenNCC"`
-	DiaChi      string `json:"dia_chi" db:"DiaChi"`
-	SoDienThoai string `json:"so_dien_thoai" db:"SoDienThoai"`
-	Email       string `json:"email" db:"Email"`
+    MaNCC       int    `gorm:"primaryKey;column:MaNCC" json:"ma_ncc"`
+    TenNCC      string `gorm:"column:TenNCC" json:"ten_ncc"`
+    DiaChi      string `gorm:"column:DiaChi" json:"dia_chi"`
+    SoDienThoai string `gorm:"column:SoDienThoai" json:"so_dien_thoai"`
+    Email       string `gorm:"column:Email" json:"email"`
+}
+
+// --- Cung cấp tên bảng cho GORM ---
+func (NhaCungCap) TableName() string {
+    return "NhaCungCap"
 }
