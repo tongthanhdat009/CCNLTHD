@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th9 16, 2025 lúc 07:38 AM
+-- Thời gian đã tạo: Th9 21, 2025 lúc 11:05 AM
 -- Phiên bản máy phục vụ: 10.4.32-MariaDB
 -- Phiên bản PHP: 8.2.12
 
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Cơ sở dữ liệu: `ql_cuahangdungcu`
+-- Cơ sở dữ liệu: `ql_cuahanggiay`
 --
 
 -- --------------------------------------------------------
@@ -474,6 +474,21 @@ INSERT INTO `quyen` (`MaQuyen`, `TenQuyen`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Cấu trúc bảng cho bảng `refreshtoken`
+--
+
+CREATE TABLE `refreshtoken` (
+  `MaToken` int(11) NOT NULL,
+  `MaNguoiDung` int(11) NOT NULL,
+  `Token` varchar(500) NOT NULL,
+  `NgayTao` datetime DEFAULT current_timestamp(),
+  `NgayHetHan` datetime NOT NULL,
+  `TrangThai` enum('Hoạt Động','Chặn') DEFAULT 'Hoạt Động'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Cấu trúc bảng cho bảng `sanpham`
 --
 
@@ -650,6 +665,13 @@ ALTER TABLE `quyen`
   ADD UNIQUE KEY `TenQuyen` (`TenQuyen`);
 
 --
+-- Chỉ mục cho bảng `refreshtoken`
+--
+ALTER TABLE `refreshtoken`
+  ADD PRIMARY KEY (`MaToken`),
+  ADD KEY `MaNguoiDung` (`MaNguoiDung`);
+
+--
 -- Chỉ mục cho bảng `sanpham`
 --
 ALTER TABLE `sanpham`
@@ -759,6 +781,12 @@ ALTER TABLE `quyen`
   MODIFY `MaQuyen` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
+-- AUTO_INCREMENT cho bảng `refreshtoken`
+--
+ALTER TABLE `refreshtoken`
+  MODIFY `MaToken` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT cho bảng `sanpham`
 --
 ALTER TABLE `sanpham`
@@ -847,6 +875,12 @@ ALTER TABLE `phanquyen`
 ALTER TABLE `phieunhap`
   ADD CONSTRAINT `phieunhap_ibfk_1` FOREIGN KEY (`MaNguoiDung`) REFERENCES `nguoidung` (`MaNguoiDung`),
   ADD CONSTRAINT `phieunhap_ibfk_2` FOREIGN KEY (`MaNCC`) REFERENCES `nhacungcap` (`MaNCC`);
+
+--
+-- Các ràng buộc cho bảng `refreshtoken`
+--
+ALTER TABLE `refreshtoken`
+  ADD CONSTRAINT `refreshtoken_ibfk_1` FOREIGN KEY (`MaNguoiDung`) REFERENCES `nguoidung` (`MaNguoiDung`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Các ràng buộc cho bảng `sanpham`
