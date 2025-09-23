@@ -7,6 +7,7 @@ import (
 
 type HangHoaRepository interface {
     GetAll() ([]models.HangHoa, error)
+    CountByHangID(hangID int) (int64, error) // Phương thức để đếm số hàng hóa theo mã hãng
 }
 
 type hangHoaRepo struct {
@@ -22,4 +23,10 @@ func (r *hangHoaRepo) GetAll() ([]models.HangHoa, error) {
     // Sử dụng Preload để tải các dữ liệu liên quan
     err := r.db.Preload("Hang").Preload("DanhMuc").Preload("BienThes").Find(&hangHoas).Error
     return hangHoas, err
+}
+
+func (r *hangHoaRepo) CountByHangID(hangID int) (int64, error) {
+    var count int64
+    err := r.db.Model(&models.HangHoa{}).Where("mahang = ?", hangID).Count(&count).Error
+    return count, err
 }

@@ -39,11 +39,21 @@ func main() {
     nguoiDungService := services.NewNguoiDungService(nguoiDungRepo)
     nguoiDungHandler := handlers.NewNguoiDungHandler(nguoiDungService)
 
+    //Hãng
+    hangRepo := repositories.NewHangRepository(database)
+    hangService := services.NewHangService(hangRepo, hangHoaRepo)
+    hangHandler := handlers.NewHangHandler(hangService)
+
+    //Nhà cung cấp
+    nhaCungCapRepo := repositories.NewNhaCungCapRepository(database)
+    nhaCungCapService := services.NewNhaCungCapService(nhaCungCapRepo)
+    nhaCungCapHandler := handlers.NewNhaCungCapHandler(nhaCungCapService)
+
     // --- Thiết lập server ---
     r := gin.Default()
 
     // Gọi hàm để thiết lập tất cả các routes
-    routes.SetupRoutes(r, hangHoaHandler, donHangHandler, nguoiDungHandler)
+    routes.SetupRoutes(r, hangHoaHandler, donHangHandler, nguoiDungHandler, hangHandler, nhaCungCapHandler)
 
     log.Println("Starting server on :8080")
     if err := r.Run(":8080"); err != nil {
