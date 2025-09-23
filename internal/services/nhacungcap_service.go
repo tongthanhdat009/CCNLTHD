@@ -6,7 +6,7 @@ import (
     "github.com/tongthanhdat009/CCNLTHD/internal/repositories"
 	"gorm.io/gorm"
     "regexp"
-
+    // "log"
 )
 
 type NhaCungCapService interface {
@@ -19,11 +19,15 @@ type NhaCungCapService interface {
 }
 
 type nhaCungCapService struct {
-    repo repositories.NhaCungCapRepository
+    repo                repositories.NhaCungCapRepository
+    phieuNhapRepository repositories.PhieuNhapRepository
 }
 
-func NewNhaCungCapService(repo repositories.NhaCungCapRepository) NhaCungCapService {
-    return &nhaCungCapService{repo: repo}
+func NewNhaCungCapService(repo repositories.NhaCungCapRepository, db *gorm.DB) NhaCungCapService {
+    return &nhaCungCapService{
+        repo:                repo,
+        phieuNhapRepository: repositories.NewPhieuNhapRepository(db),
+    }
 }
 
 func (s *nhaCungCapService) GetAllNhaCungCap() ([]models.NhaCungCap, error) {
@@ -133,8 +137,11 @@ func (s *nhaCungCapService) GetNhaCungCapByName(name string) ([]models.NhaCungCa
 }
 
 func (s *nhaCungCapService) DeleteNhaCungCap(id int) error {
+    // log.Printf("Bắt đầu xóa nhà cung cấp với ID: %d", id)
+
     // Kiểm tra ID hợp lệ
     if id <= 0 {
+        // log.Printf("ID không hợp lệ: %d", id)
         return errors.New("ID nhà cung cấp không hợp lệ")
     }
 
@@ -142,15 +149,32 @@ func (s *nhaCungCapService) DeleteNhaCungCap(id int) error {
     existingNhaCungCap, err := s.repo.GetNhaCungCapByID(id)
     if err != nil {
         if errors.Is(err, gorm.ErrRecordNotFound) {
+            // log.Printf("Nhà cung cấp không tồn tại với ID: %d", id)
             return errors.New("nhà cung cấp không tồn tại")
         }
-        return err // Lỗi hệ thống
+        // log.Printf("Lỗi khi kiểm tra nhà cung cấp: %v", err)
+        return err
+    }
+    // log.Printf("Nhà cung cấp tồn tại: %+v", existingNhaCungCap)
+
+    // Kiểm tra nhà cung cấp có tồn tại trong phiếu nhập không
+    exists, err := s.phieuNhapRepository.ExistsInPhieuNhap(existingNhaCungCap.MaNCC)
+    if err != nil {
+        // log.Printf("Lỗi khi kiểm tra phiếu nhập: %v", err)
+        return err
+    }
+    // log.Printf("Nhà cung cấp tồn tại trong phiếu nhập: %v", exists)
+    if exists {
+        // log.Printf("Không thể xóa nhà cung cấp vì đã tồn tại trong phiếu nhập")
+        return errors.New("không thể xóa nhà cung cấp vì đã tồn tại trong phiếu nhập")
     }
 
     // Gọi repository để xóa nhà cung cấp
     if err := s.repo.DeleteNhaCungCap(existingNhaCungCap.MaNCC); err != nil {
-        return err // Lỗi khi xóa
+        // log.Printf("Lỗi khi xóa nhà cung cấp: %v", err)
+        return err
     }
 
+    // log.Printf("Xóa nhà cung cấp thành công với ID: %d", id)
     return nil
 }

@@ -46,7 +46,7 @@ func main() {
 
     //Nhà cung cấp
     nhaCungCapRepo := repositories.NewNhaCungCapRepository(database)
-    nhaCungCapService := services.NewNhaCungCapService(nhaCungCapRepo)
+    nhaCungCapService := services.NewNhaCungCapService(nhaCungCapRepo, database)
     nhaCungCapHandler := handlers.NewNhaCungCapHandler(nhaCungCapService)
 
     // --- Thiết lập server ---
