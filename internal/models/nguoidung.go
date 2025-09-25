@@ -8,7 +8,7 @@ import (
 type NguoiDung struct {
     MaNguoiDung int       `gorm:"primaryKey;column:MaNguoiDung" json:"ma_nguoi_dung"`
     TenDangNhap string    `gorm:"column:TenDangNhap" json:"ten_dang_nhap"`
-    MatKhau     string    `gorm:"column:MatKhau" json:"-"` // Thường không trả về mật khẩu trong JSON
+    MatKhau     string    `gorm:"column:MatKhau" json:"-"`
     HoTen       string    `gorm:"column:HoTen" json:"ho_ten"`
     Email       string    `gorm:"column:Email" json:"email"`
     SoDienThoai string    `gorm:"column:SoDienThoai" json:"so_dien_thoai"`
@@ -16,22 +16,22 @@ type NguoiDung struct {
     QuanHuyen   sql.NullString `gorm:"column:QuanHuyen" json:"quan_huyen"`
     PhuongXa    sql.NullString `gorm:"column:PhuongXa" json:"phuong_xa"`
     DuongSoNha  sql.NullString `gorm:"column:DuongSoNha" json:"duong_so_nha"`
-    MaQuyen     int       `gorm:"column:MaQuyen" json:"-"` // Ẩn đi để dùng struct Quyen bên dưới
+    MaQuyen     int       `gorm:"column:MaQuyen" json:"ma_quyen"` // Ẩn đi để dùng struct Quyen bên dưới
     NgayTao     time.Time `gorm:"column:NgayTao;autoCreateTime" json:"ngay_tao"`
     NgayCapNhat time.Time `gorm:"column:NgayCapNhat;autoUpdateTime" json:"ngay_cap_nhat"`
 
     // --- Mối quan hệ Many-to-One ---
     // Người dùng này thuộc về quyền nào
-    Quyen Quyen `gorm:"foreignKey:MaQuyen" json:"quyen,omitempty"`
+    Quyen Quyen `gorm:"foreignKey:MaQuyen;references:MaQuyen" json:"quyen,omitempty"`
 }
 
 type Quyen struct {
-    MaQuyen  int    `gorm:"primaryKey;column:MaQuyen" json:"ma_quyen"`
-    TenQuyen string `gorm:"column:TenQuyen" json:"ten_quyen"`
-
-    // Thêm mối quan hệ nhiều-nhiều
-    ChiTietChucNangs []*ChiTietChucNang `gorm:"many2many:phanquyen;foreignKey:MaQuyen;joinForeignKey:MaQuyen;References:MaChiTietChucNang;joinReferences:MaChiTietChucNang" json:"chi_tiet_chuc_nangs,omitempty"`
+    MaQuyen    int           `gorm:"primaryKey;column:MaQuyen" json:"ma_quyen"`
+    TenQuyen   string        `gorm:"column:TenQuyen" json:"ten_quyen"`
+    PhanQuyens []PhanQuyen   `gorm:"foreignKey:MaQuyen;references:MaQuyen" json:"phan_quyens,omitempty"`
+    ChucNangs  []ChucNang    `gorm:"-" json:"chuc_nangs"` // trường ảo
 }
+
 
 // --- Cung cấp tên bảng cho GORM ---
 func (NguoiDung) TableName() string {

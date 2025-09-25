@@ -1,25 +1,33 @@
 package models
 
-// MaChucNang model
-type MaChucNang struct {
-    MaChucNang int    `gorm:"primaryKey;column:MaChucNang" json:"ma_chuc_nang"`
-    TenChucNang string `gorm:"column:TenChucNang" json:"ten_chuc_nang"`
+import "time"
 
-    // Mối quan hệ
-    ChiTietChucNangs []ChiTietChucNang `gorm:"foreignKey:MaChucNang" json:"chi_tiet_chuc_nangs,omitempty"`
+// ChucNang model
+type ChucNang struct {
+    MaChucNang       int                 `gorm:"primaryKey;column:MaChucNang" json:"ma_chuc_nang"`
+    TenChucNang      string              `gorm:"column:TenChucNang" json:"ten_chuc_nang"`
+    ChiTietChucNangs []ChiTietChucNang   `gorm:"foreignKey:MaChucNang" json:"chi_tiet_chuc_nangs,omitempty"`
 }
 
 // ChiTietChucNang model
 type ChiTietChucNang struct {
-    MaChiTietChucNang int    `gorm:"primaryKey;column:MaChiTietChucNang" json:"ma_chi_tiet_chuc_nang"`
-    MaChucNang        int    `gorm:"column:MaChucNang" json:"-"`
-    TenChiTietChucNang string `gorm:"column:TenChiTietChucNang" json:"ten_chi_tiet_chuc_nang"`
+    MaChiTietChucNang int          `gorm:"primaryKey;column:MaChiTietChucNang" json:"ma_chi_tiet_chuc_nang"`
+    MaChucNang        int          `gorm:"column:MaChucNang" json:"-"`
+    TenChiTietChucNang string      `gorm:"column:TenChiTietChucNang" json:"ten_chi_tiet_chuc_nang"`
+}
 
-    // Mối quan hệ nhiều-nhiều với Quyen
-    Quyens []*Quyen `gorm:"many2many:phanquyen;foreigsnKey:MaChiTietChucNang;joinForeignKey:MaChiTietChucNang;References:MaQuyen;joinReferences:MaQuyen" json:"quyens,omitempty"`
+// PhanQuyen model (bảng trung gian)
+type PhanQuyen struct {
+    ID                 int                 `gorm:"primaryKey;autoIncrement" json:"id"`
+    MaQuyen            int                 `gorm:"column:MaQuyen" json:"ma_quyen"`
+    MaChiTietChucNang int                 `gorm:"column:MaChiTietChucNang" json:"ma_chi_tiet_chuc_nang"`
+    NgayTao            time.Time           `gorm:"column:NgayTao;autoCreateTime" json:"ngay_tao"`
+
+    Quyen              Quyen               `gorm:"foreignKey:MaQuyen;references:MaQuyen" json:"quyen,omitempty"`
+    ChiTietChucNang   ChiTietChucNang     `gorm:"foreignKey:MaChiTietChucNang;references:MaChiTietChucNang" json:"chi_tiet_chuc_nang,omitempty"`
 }
 
 // --- Cung cấp tên bảng cho GORM ---
-func (MaChucNang) TableName() string      { return "machucnang" }
+func (ChucNang) TableName() string { return "chucnang" }
 func (ChiTietChucNang) TableName() string { return "chitietchucnang" }
-// Bảng phanquyen được GORM quản lý tự động qua gorm:"many2many:phanquyen"
+func (PhanQuyen) TableName() string { return "phanquyen" }

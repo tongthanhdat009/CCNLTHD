@@ -49,11 +49,19 @@ func main() {
     nhaCungCapService := services.NewNhaCungCapService(nhaCungCapRepo, database)
     nhaCungCapHandler := handlers.NewNhaCungCapHandler(nhaCungCapService)
 
+    // Đăng ký
+    dangKyService := services.NewDangKyService(nguoiDungRepo)
+    dangKyHandler := handlers.NewDangKyHandler(dangKyService)
+
+    // Đăng nhập
+    dangNhapService := services.NewDangNhapService(nguoiDungRepo)
+    dangNhapHandler := handlers.NewDangNhapHandler(dangNhapService)
+
     // --- Thiết lập server ---
     r := gin.Default()
 
     // Gọi hàm để thiết lập tất cả các routes
-    routes.SetupRoutes(r, hangHoaHandler, donHangHandler, nguoiDungHandler, hangHandler, nhaCungCapHandler)
+    routes.SetupRoutes(r, hangHoaHandler, donHangHandler, nguoiDungHandler, hangHandler, nhaCungCapHandler, dangKyHandler, dangNhapHandler)
 
     log.Println("Starting server on :8080")
     if err := r.Run(":8080"); err != nil {

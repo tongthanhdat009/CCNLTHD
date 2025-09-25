@@ -6,10 +6,21 @@ import (
 )
 
 // SetupRoutes định nghĩa tất cả các route cho ứng dụng.
-func SetupRoutes(r *gin.Engine, hangHoaHandler *handlers.HangHoaHandler, donHangHandler *handlers.DonHangHandler, nguoiDungHandler  *handlers.NguoiDungHandler, hangHandler *handlers.HangHandler, nhaCungCap *handlers.NhaCungCapHandler) {
+func SetupRoutes(r *gin.Engine, hangHoaHandler *handlers.HangHoaHandler, donHangHandler *handlers.DonHangHandler, nguoiDungHandler  *handlers.NguoiDungHandler, hangHandler *handlers.HangHandler, nhaCungCap *handlers.NhaCungCapHandler, dangKyHandler *handlers.DangKyHandler, dangNhapHandler *handlers.DangNhapHandler) {
     // Nhóm các API dưới tiền tố /api
     api := r.Group("/api")
     {
+        // Routes cho Đăng Ký
+        dangKyRoutes := api.Group("/dangky")
+        {
+            dangKyRoutes.POST("", dangKyHandler.CreateNguoiDung)
+        }
+        // Routes cho Đăng Nhập
+        dangNhapRoutes := api.Group("/dangnhap")
+        {
+            dangNhapRoutes.POST("", dangNhapHandler.KiemTraDangNhap)
+        }
+
         // Routes cho Hàng Hóa
         hangHoaRoutes := api.Group("/hanghoa")
         {
