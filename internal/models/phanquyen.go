@@ -22,9 +22,7 @@ type PhanQuyen struct {
     MaQuyen            int                 `gorm:"column:MaQuyen" json:"ma_quyen"`
     MaChiTietChucNang int                 `gorm:"column:MaChiTietChucNang" json:"ma_chi_tiet_chuc_nang"`
     NgayTao            time.Time           `gorm:"column:NgayTao;autoCreateTime" json:"ngay_tao"`
-
-    Quyen              Quyen               `gorm:"foreignKey:MaQuyen;references:MaQuyen" json:"quyen,omitempty"`
-    ChiTietChucNang   ChiTietChucNang     `gorm:"foreignKey:MaChiTietChucNang;references:MaChiTietChucNang" json:"chi_tiet_chuc_nang,omitempty"`
+    TrangThai         string              `gorm:"column:TrangThai" json:"trang_thai"`
 }
 
 // --- Cung cấp tên bảng cho GORM ---

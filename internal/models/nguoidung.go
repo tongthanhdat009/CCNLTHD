@@ -29,7 +29,7 @@ type Quyen struct {
     MaQuyen    int           `gorm:"primaryKey;column:MaQuyen" json:"ma_quyen"`
     TenQuyen   string        `gorm:"column:TenQuyen" json:"ten_quyen"`
     PhanQuyens []PhanQuyen   `gorm:"foreignKey:MaQuyen;references:MaQuyen" json:"phan_quyens,omitempty"`
-    ChucNangs  []ChucNang    `gorm:"-" json:"chuc_nangs"` // trường ảo
+    ChucNangs  []ChucNang    `gorm:"-" json:"chuc_nangs,omitempty"` // Không ánh xạ trực tiếp, sẽ lấy qua bảng PhanQuyen
 }
 
 

@@ -8,11 +8,13 @@ import (
 type NguoiDungRepository interface {
     GetAll() ([]models.NguoiDung, error)
     Create(nguoiDung models.NguoiDung) error
+    Update(maNguoiDung int, nguoiDung models.NguoiDung) error
     CheckNameExists(name string) (bool, error)
     FindQuyenKhachHang() (int, error)
     KiemTraDangNhap(tenDangNhap string) (*models.NguoiDung, error)
     LayChucNangTheoMaQuyen(maQuyen int) ([]models.ChucNang, error)
     CreateRefreshToken(refreshToken models.RefreshToken) error
+    GetNguoiDungByID(maNguoiDung int) (*models.NguoiDung, error)
 }
 
 type NguoiDungRepo struct {
@@ -31,6 +33,11 @@ func (r *NguoiDungRepo) GetAll() ([]models.NguoiDung, error) {
 }
 func (r *NguoiDungRepo) Create(nguoiDung models.NguoiDung) error {
     return r.db.Create(&nguoiDung).Error
+}
+func (r *NguoiDungRepo) Update(maNguoiDung int, nguoiDung models.NguoiDung) error {
+    return r.db.Model(&models.NguoiDung{}).
+        Where("MaNguoiDung = ?", maNguoiDung).
+        Updates(nguoiDung).Error
 }
 func (r *NguoiDungRepo) CheckNameExists(name string) (bool, error) {
     var count int64
@@ -67,7 +74,7 @@ func (r *NguoiDungRepo) LayChucNangTheoMaQuyen(maQuyen int) ([]models.ChucNang, 
     err := r.db.
         Joins("JOIN chitietchucnang ON chitietchucnang.MaChucNang = chucnang.MaChucNang").
         Joins("JOIN phanquyen ON phanquyen.MaChiTietChucNang = chitietchucnang.MaChiTietChucNang").
-        Where("phanquyen.MaQuyen = ?", maQuyen).
+        Where("phanquyen.MaQuyen = ? AND phanquyen.TrangThai = ?", maQuyen, "Mở").
         Preload("ChiTietChucNangs").
         Group("chucnang.MaChucNang").
         Find(&chucNangs).Error
@@ -80,4 +87,11 @@ func (r *NguoiDungRepo) LayChucNangTheoMaQuyen(maQuyen int) ([]models.ChucNang, 
 func (r *NguoiDungRepo) CreateRefreshToken(refreshToken models.RefreshToken) error {
     return r.db.Create(&refreshToken).Error
 }
-
+func (r *NguoiDungRepo) GetNguoiDungByID(maNguoiDung int) (*models.NguoiDung, error) {
+    var nguoiDung models.NguoiDung
+    err := r.db.Preload("Quyen").First(&nguoiDung, maNguoiDung).Error
+    if err != nil {
+        return nil, err
+    }
+    return &nguoiDung, nil
+}

@@ -2,7 +2,6 @@ package main
 
 import (
     "log"
-
     "github.com/gin-gonic/gin"
     "github.com/joho/godotenv"
     "github.com/tongthanhdat009/CCNLTHD/internal/db"
@@ -10,6 +9,7 @@ import (
     "github.com/tongthanhdat009/CCNLTHD/internal/repositories"
     "github.com/tongthanhdat009/CCNLTHD/internal/routes" // <-- Import package routes
     "github.com/tongthanhdat009/CCNLTHD/internal/services"
+    "github.com/tongthanhdat009/CCNLTHD/internal/middleware"
 )
 
 func main() {
@@ -57,11 +57,17 @@ func main() {
     dangNhapService := services.NewDangNhapService(nguoiDungRepo)
     dangNhapHandler := handlers.NewDangNhapHandler(dangNhapService)
 
+    // Middleware
+    authRepo := repositories.NewAuthRepository(database)
+    permissionService := services.NewPermissionService(authRepo)
+    permissionMiddleware := middleware.NewPermissionMiddleware(permissionService)
+
+
     // --- Thiết lập server ---
     r := gin.Default()
 
     // Gọi hàm để thiết lập tất cả các routes
-    routes.SetupRoutes(r, hangHoaHandler, donHangHandler, nguoiDungHandler, hangHandler, nhaCungCapHandler, dangKyHandler, dangNhapHandler)
+    routes.SetupRoutes(r, hangHoaHandler, donHangHandler, nguoiDungHandler, hangHandler, nhaCungCapHandler, dangKyHandler, dangNhapHandler, permissionMiddleware)
 
     log.Println("Starting server on :8080")
     if err := r.Run(":8080"); err != nil {

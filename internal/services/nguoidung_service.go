@@ -7,6 +7,8 @@ import (
 
 type NguoiDungService interface {
     GetAllNguoiDung() ([]models.NguoiDung, error)
+    GetNguoiDungByID(maNguoiDung int) (*models.NguoiDung, error)
+    UpdateNguoiDung(maNguoiDung int, nguoiDung models.NguoiDung) error
 }
 
 type nguoiDungService struct {
@@ -19,4 +21,12 @@ func NewNguoiDungService(repo repositories.NguoiDungRepository) NguoiDungService
 
 func (s *nguoiDungService) GetAllNguoiDung() ([]models.NguoiDung, error) {
     return s.repo.GetAll()
+}
+
+func (s *nguoiDungService) GetNguoiDungByID(maNguoiDung int) (*models.NguoiDung, error) {
+    return s.repo.GetNguoiDungByID(maNguoiDung)
+}
+
+func (s *nguoiDungService) UpdateNguoiDung(maNguoiDung int, nguoiDung models.NguoiDung) error {
+    return s.repo.Update(maNguoiDung, nguoiDung)
 }
