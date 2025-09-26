@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th9 21, 2025 lúc 11:05 AM
+-- Thời gian đã tạo: Th9 26, 2025 lúc 04:48 PM
 -- Phiên bản máy phục vụ: 10.4.32-MariaDB
 -- Phiên bản PHP: 8.2.12
 
@@ -146,6 +146,35 @@ CREATE TABLE `chitietphieunhap` (
 INSERT INTO `chitietphieunhap` (`MaChiTiet`, `MaPhieuNhap`, `MaBienthe`, `SoLuong`, `GiaNhap`, `NgaySanXuat`, `ThoiGianBaoHanh`) VALUES
 (1, 1, 4, 10, 1200000.00, '2025-08-01', 12),
 (2, 1, 5, 5, 1200000.00, '2025-08-01', 12);
+
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `chucnang`
+--
+
+CREATE TABLE `chucnang` (
+  `MaChucNang` int(11) NOT NULL,
+  `TenChucNang` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `chucnang`
+--
+
+INSERT INTO `chucnang` (`MaChucNang`, `TenChucNang`) VALUES
+(1, 'Trang chủ'),
+(2, 'Quản lý khuyến mãi'),
+(3, 'Quản lý hãng'),
+(4, 'Quản lý nhà cung cấp'),
+(5, 'Quản lý phiếu nhập'),
+(6, 'Quản lý hàng hóa'),
+(7, 'Quản lý danh mục'),
+(8, 'Quản lý đơn hàng'),
+(9, 'Quản lý người dùng'),
+(10, 'Quản lý phân quyền'),
+(11, 'Tra cứu sản phẩm'),
+(12, 'Quản lý đánh giá');
 
 -- --------------------------------------------------------
 
@@ -298,35 +327,6 @@ INSERT INTO `khuyenmai` (`MaKhuyenMai`, `TenKhuyenMai`, `MoTa`, `GiaTri`) VALUES
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `machucnang`
---
-
-CREATE TABLE `machucnang` (
-  `MaChucNang` int(11) NOT NULL,
-  `TenChucNang` varchar(100) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Đang đổ dữ liệu cho bảng `machucnang`
---
-
-INSERT INTO `machucnang` (`MaChucNang`, `TenChucNang`) VALUES
-(1, 'Trang chủ'),
-(2, 'Quản lý khuyến mãi'),
-(3, 'Quản lý hãng'),
-(4, 'Quản lý nhà cung cấp'),
-(5, 'Quản lý phiếu nhập'),
-(6, 'Quản lý hàng hóa'),
-(7, 'Quản lý danh mục'),
-(8, 'Quản lý đơn hàng'),
-(9, 'Quản lý người dùng'),
-(10, 'Quản lý phân quyền'),
-(11, 'Tra cứu sản phẩm'),
-(12, 'Quản lý đánh giá');
-
--- --------------------------------------------------------
-
---
 -- Cấu trúc bảng cho bảng `nguoidung`
 --
 
@@ -353,7 +353,10 @@ CREATE TABLE `nguoidung` (
 INSERT INTO `nguoidung` (`MaNguoiDung`, `TenDangNhap`, `MatKhau`, `HoTen`, `Email`, `SoDienThoai`, `TinhThanh`, `QuanHuyen`, `PhuongXa`, `DuongSoNha`, `MaQuyen`, `NgayTao`, `NgayCapNhat`) VALUES
 (1, 'admin', '5994471abb01112afcc18159f6cc74b4f511b99806da59b3caf5a9c173cacfc5', 'Nguyễn Văn Admin', 'admin@shop.com', '0900000000', 'TP. Hồ Chí Minh', 'Quận 1', 'Phường Bến Nghé', 'Số 1 Nguyễn Huệ', 1, '2025-09-16 09:57:10', '2025-09-16 09:57:10'),
 (2, 'nhanvien1', '5994471abb01112afcc18159f6cc74b4f511b99806da59b3caf5a9c173cacfc5', 'Trần Thị Nhân Viên', 'nhanvien1@shop.com', '0911111111', 'TP. Hà Nội', 'Quận Hoàn Kiếm', 'Phường Hàng Trống', 'Số 10 Hàng Bài', 2, '2025-09-16 09:57:10', '2025-09-16 09:57:10'),
-(3, 'khach1', '5994471abb01112afcc18159f6cc74b4f511b99806da59b3caf5a9c173cacfc5', 'Lê Văn Khách', 'khach1@shop.com', '0922222222', 'TP. Đà Nẵng', 'Quận Hải Châu', 'Phường Thạch Thang', 'Số 20 Lê Duẩn', 3, '2025-09-16 09:57:10', '2025-09-16 09:57:10');
+(3, 'khach1', '5994471abb01112afcc18159f6cc74b4f511b99806da59b3caf5a9c173cacfc5', 'Lê Văn Khách', 'khach1@shop.com', '0922222222', 'TP. Đà Nẵng', 'Quận Hải Châu', 'Phường Thạch Thang', 'Số 20 Lê Duẩn', 3, '2025-09-16 09:57:10', '2025-09-16 09:57:10'),
+(9, 'minhtuan123', '$2a$10$dLpjtKdSZ17gDV/Y1SufGeJlxnL2ZJgS1bbTk1A7CSX4oYvqZ4ami', 'Nguyễn Minh Tuấn', 'tuan@example.com', '', NULL, NULL, NULL, NULL, 1, '2025-09-25 18:58:19', '2025-09-25 19:11:16'),
+(10, 'minhtuan1234', '$2a$10$q.lkRDzs4YwSVHB/mZ88auiYhQ04nZzQzR0wq5/I60Ha53Fc7mG82', 'Nguyễn Minh Tuấn', 'tuan@example.com', '', NULL, NULL, NULL, NULL, 3, '2025-09-25 19:07:13', '2025-09-25 19:07:13'),
+(11, 'tuan121134', '$2a$10$o7g09BL9vQW8694ViaB4U.Dt94n.7/5U8lEYfoBWCYYjK/mXxeACW', 'Nguyễn Minh Tuấn', 'tuan@example.com', '', NULL, NULL, NULL, NULL, 3, '2025-09-26 20:48:36', '2025-09-26 20:48:36');
 
 -- --------------------------------------------------------
 
@@ -384,50 +387,51 @@ INSERT INTO `nhacungcap` (`MaNCC`, `TenNCC`, `DiaChi`, `SoDienThoai`, `Email`) V
 
 CREATE TABLE `phanquyen` (
   `MaQuyen` int(11) NOT NULL,
-  `MaChiTietChucNang` int(11) NOT NULL
+  `MaChiTietChucNang` int(11) NOT NULL,
+  `TrangThai` varchar(10) NOT NULL DEFAULT 'Đóng'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `phanquyen`
 --
 
-INSERT INTO `phanquyen` (`MaQuyen`, `MaChiTietChucNang`) VALUES
-(1, 1),
-(1, 2),
-(1, 3),
-(1, 4),
-(1, 5),
-(1, 6),
-(1, 7),
-(1, 8),
-(1, 9),
-(1, 10),
-(1, 11),
-(1, 12),
-(1, 13),
-(1, 14),
-(1, 15),
-(1, 16),
-(1, 17),
-(1, 18),
-(1, 19),
-(1, 20),
-(1, 21),
-(1, 22),
-(1, 23),
-(1, 24),
-(1, 25),
-(1, 26),
-(1, 27),
-(1, 28),
-(1, 29),
-(1, 30),
-(1, 31),
-(1, 32),
-(1, 33),
-(1, 34),
-(1, 35),
-(1, 36);
+INSERT INTO `phanquyen` (`MaQuyen`, `MaChiTietChucNang`, `TrangThai`) VALUES
+(1, 1, 'Mở'),
+(1, 2, 'Mở'),
+(1, 3, 'Mở'),
+(1, 4, 'Mở'),
+(1, 5, 'Mở'),
+(1, 6, 'Mở'),
+(1, 7, 'Mở'),
+(1, 8, 'Mở'),
+(1, 9, 'Mở'),
+(1, 10, 'Mở'),
+(1, 11, 'Mở'),
+(1, 12, 'Mở'),
+(1, 13, 'Mở'),
+(1, 14, 'Mở'),
+(1, 15, 'Mở'),
+(1, 16, 'Mở'),
+(1, 17, 'Mở'),
+(1, 18, 'Mở'),
+(1, 19, 'Mở'),
+(1, 20, 'Mở'),
+(1, 21, 'Mở'),
+(1, 22, 'Mở'),
+(1, 23, 'Mở'),
+(1, 24, 'Mở'),
+(1, 25, 'Mở'),
+(1, 26, 'Mở'),
+(1, 27, 'Mở'),
+(1, 28, 'Mở'),
+(1, 29, 'Mở'),
+(1, 30, 'Mở'),
+(1, 31, 'Mở'),
+(1, 32, 'Mở'),
+(1, 33, 'Mở'),
+(1, 34, 'Mở'),
+(1, 35, 'Mở'),
+(1, 36, 'Mở');
 
 -- --------------------------------------------------------
 
@@ -468,7 +472,7 @@ CREATE TABLE `quyen` (
 
 INSERT INTO `quyen` (`MaQuyen`, `TenQuyen`) VALUES
 (1, 'Admin'),
-(3, 'Khàch hàng'),
+(3, 'Khách hàng'),
 (2, 'Nhân viên');
 
 -- --------------------------------------------------------
@@ -485,6 +489,29 @@ CREATE TABLE `refreshtoken` (
   `NgayHetHan` datetime NOT NULL,
   `TrangThai` enum('Hoạt Động','Chặn') DEFAULT 'Hoạt Động'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `refreshtoken`
+--
+
+INSERT INTO `refreshtoken` (`MaToken`, `MaNguoiDung`, `Token`, `NgayTao`, `NgayHetHan`, `TrangThai`) VALUES
+(3, 9, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTk0MTc5OTQsIm1hX25ndW9pX2R1bmciOjksInR5cGUiOiJyZWZyZXNoIn0.AAjO2mZ2d8NvUMugJPK8F3WVVwrybNl8b43gbbwZ7t8', '2025-09-25 22:13:14', '2025-10-02 22:13:14', 'Hoạt Động'),
+(4, 9, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTk0ODA2MDYsIm1hX25ndW9pX2R1bmciOjksInR5cGUiOiJyZWZyZXNoIn0.zebtI1Bf7E6KMMbfuA06QBoIYN38brxN45f7ZOMk9ak', '2025-09-26 15:36:46', '2025-10-03 15:36:46', 'Hoạt Động'),
+(5, 9, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTk0ODQzMTksIm1hX25ndW9pX2R1bmciOjksInR5cGUiOiJyZWZyZXNoIn0.iZZh4A1jyJjnlQCXscGOPfZ_bIBDYiYqzprkNWMO9mw', '2025-09-26 16:38:39', '2025-10-03 16:38:39', 'Hoạt Động'),
+(6, 9, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTk0ODQ0ODAsIm1hX25ndW9pX2R1bmciOjksInR5cGUiOiJyZWZyZXNoIn0.90UD-E6lADLG-NSK2SUqbot0-Pf-MzsC_9wU-SGfuOU', '2025-09-26 16:41:20', '2025-10-03 16:41:20', 'Hoạt Động'),
+(7, 9, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTk0ODQ1OTUsIm1hX25ndW9pX2R1bmciOjksInR5cGUiOiJyZWZyZXNoIn0.5SHrWBYwF1UUawxWHXfmUw_2JsJiT9BKlDsVz4wBsHc', '2025-09-26 16:43:15', '2025-10-03 16:43:15', 'Hoạt Động'),
+(8, 9, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTk0ODQ2NzMsIm1hX25ndW9pX2R1bmciOjksInR5cGUiOiJyZWZyZXNoIn0.SO29GPNcRGzfDrSDutLi0lK4R46PmOu3_GNFxETaBgU', '2025-09-26 16:44:33', '2025-10-03 16:44:33', 'Hoạt Động'),
+(9, 9, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTk0ODQ3NTUsIm1hX25ndW9pX2R1bmciOjksInR5cGUiOiJyZWZyZXNoIn0.7BKlcZX_8L5W7g1sM6OU9XyUOUpD0hfZJs5oIIQ8o_U', '2025-09-26 16:45:55', '2025-10-03 16:45:55', 'Hoạt Động'),
+(10, 9, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTk0ODc0NzAsIm1hX25ndW9pX2R1bmciOjksInR5cGUiOiJyZWZyZXNoIn0.gn16EgHiwOg0-gWpDdAEeFhOegtgiMwbJm6293im6Z4', '2025-09-26 17:31:10', '2025-10-03 17:31:10', 'Hoạt Động'),
+(11, 9, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTk0ODc0NzQsIm1hX25ndW9pX2R1bmciOjksInR5cGUiOiJyZWZyZXNoIn0.emxjLCF4SKWY71vyhOC0u3BjM21NVuAh2g83iga90iM', '2025-09-26 17:31:14', '2025-10-03 17:31:14', 'Hoạt Động'),
+(12, 9, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTk0ODc0OTksIm1hX25ndW9pX2R1bmciOjksInR5cGUiOiJyZWZyZXNoIn0.cZKglWtQV4el1fytlzC9wP-8iAnR-hSCRyRx7VsMlHk', '2025-09-26 17:31:39', '2025-10-03 17:31:39', 'Hoạt Động'),
+(13, 9, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTk0ODg5MjUsIm1hX25ndW9pX2R1bmciOjksInR5cGUiOiJyZWZyZXNoIn0.8Hv7ar-4y_jEWZgx2YAKsPXBkEyK0C9_Tghz_3KNQ0U', '2025-09-26 17:55:25', '2025-10-03 17:55:25', 'Hoạt Động'),
+(14, 9, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTk0ODkwMTQsIm1hX25ndW9pX2R1bmciOjksInR5cGUiOiJyZWZyZXNoIn0.lElnpP0HchbDabhlkMIMjnf0qJMP0kbZfOoDWK2epJ8', '2025-09-26 17:56:54', '2025-10-03 17:56:54', 'Hoạt Động'),
+(15, 9, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTk0OTU4MzgsIm1hX25ndW9pX2R1bmciOjksInR5cGUiOiJyZWZyZXNoIn0.jLSR9tEc6tVd4zhJUAcx1AFa17wRsFytY7jLBV8FpmU', '2025-09-26 19:50:38', '2025-10-03 19:50:38', 'Hoạt Động'),
+(16, 9, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTk0OTU4ODgsIm1hX25ndW9pX2R1bmciOjksInR5cGUiOiJyZWZyZXNoIn0.6a8cwfQwy2Z_qgM6se_ASd3sntA0HSQesRS_IWf2BMo', '2025-09-26 19:51:28', '2025-10-03 19:51:28', 'Hoạt Động'),
+(17, 9, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTk0OTU5ODIsIm1hX25ndW9pX2R1bmciOjksInR5cGUiOiJyZWZyZXNoIn0.q7a6qnMS82KmYrY6k2PPaDmkcypuOQk9eRckDq4vl1I', '2025-09-26 19:53:02', '2025-10-03 19:53:02', 'Hoạt Động'),
+(18, 9, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTk0OTc5MDIsIm1hX25ndW9pX2R1bmciOjksInR5cGUiOiJyZWZyZXNoIn0.Jqir5Zw2C9S4TJuyqD2JNLd75Ekx62ha4YVjOiItreE', '2025-09-26 20:25:02', '2025-10-03 20:25:02', 'Hoạt Động'),
+(19, 9, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTk0OTg5MTIsIm1hX25ndW9pX2R1bmciOjksInR5cGUiOiJyZWZyZXNoIn0.F2vgL3gyIkC9J6YuCWAnY-3hj6iPxqdZLpTVF79NnQk', '2025-09-26 20:41:52', '2025-10-03 20:41:52', 'Hoạt Động');
 
 -- --------------------------------------------------------
 
@@ -571,6 +598,12 @@ ALTER TABLE `chitietphieunhap`
   ADD KEY `MaBienthe` (`MaBienthe`);
 
 --
+-- Chỉ mục cho bảng `chucnang`
+--
+ALTER TABLE `chucnang`
+  ADD PRIMARY KEY (`MaChucNang`);
+
+--
 -- Chỉ mục cho bảng `danhgia`
 --
 ALTER TABLE `danhgia`
@@ -622,18 +655,11 @@ ALTER TABLE `khuyenmai`
   ADD PRIMARY KEY (`MaKhuyenMai`);
 
 --
--- Chỉ mục cho bảng `machucnang`
---
-ALTER TABLE `machucnang`
-  ADD PRIMARY KEY (`MaChucNang`);
-
---
 -- Chỉ mục cho bảng `nguoidung`
 --
 ALTER TABLE `nguoidung`
   ADD PRIMARY KEY (`MaNguoiDung`),
   ADD UNIQUE KEY `TenDangNhap` (`TenDangNhap`),
-  ADD UNIQUE KEY `Email` (`Email`),
   ADD KEY `MaQuyen` (`MaQuyen`);
 
 --
@@ -715,6 +741,12 @@ ALTER TABLE `chitietphieunhap`
   MODIFY `MaChiTiet` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
+-- AUTO_INCREMENT cho bảng `chucnang`
+--
+ALTER TABLE `chucnang`
+  MODIFY `MaChucNang` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+
+--
 -- AUTO_INCREMENT cho bảng `danhgia`
 --
 ALTER TABLE `danhgia`
@@ -751,16 +783,10 @@ ALTER TABLE `khuyenmai`
   MODIFY `MaKhuyenMai` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
--- AUTO_INCREMENT cho bảng `machucnang`
---
-ALTER TABLE `machucnang`
-  MODIFY `MaChucNang` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
-
---
 -- AUTO_INCREMENT cho bảng `nguoidung`
 --
 ALTER TABLE `nguoidung`
-  MODIFY `MaNguoiDung` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `MaNguoiDung` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT cho bảng `nhacungcap`
@@ -784,7 +810,7 @@ ALTER TABLE `quyen`
 -- AUTO_INCREMENT cho bảng `refreshtoken`
 --
 ALTER TABLE `refreshtoken`
-  MODIFY `MaToken` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `MaToken` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT cho bảng `sanpham`
@@ -812,7 +838,7 @@ ALTER TABLE `bienthe`
 -- Các ràng buộc cho bảng `chitietchucnang`
 --
 ALTER TABLE `chitietchucnang`
-  ADD CONSTRAINT `chitietchucnang_ibfk_1` FOREIGN KEY (`MaChucNang`) REFERENCES `machucnang` (`MaChucNang`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `chitietchucnang_ibfk_1` FOREIGN KEY (`MaChucNang`) REFERENCES `chucnang` (`MaChucNang`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Các ràng buộc cho bảng `chitietdonhang`
