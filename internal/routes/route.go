@@ -32,7 +32,10 @@ func SetupRoutes(r *gin.Engine, hangHoaHandler *handlers.HangHoaHandler, donHang
         nguoiDungRoutes := api.Group("/nguoidung")
         {
             nguoiDungRoutes.GET("", permissionMiddleware.Require("Quản lý người dùng", "Xem"), nguoiDungHandler.GetAllNguoiDung)
-            nguoiDungRoutes.PATCH("/:id", nguoiDungHandler.UpdateNguoiDung)
+            nguoiDungRoutes.PUT("/:id", permissionMiddleware.RequireUserIDMatch(), nguoiDungHandler.UpdateNguoiDung)
+            nguoiDungRoutes.GET("/admin/:id",permissionMiddleware.Require("Quản lý người dùng", "Xem"), nguoiDungHandler.GetNguoiDungByID)
+            nguoiDungRoutes.GET("/:id",permissionMiddleware.RequireUserIDMatch(), nguoiDungHandler.GetNguoiDungByID)
+            nguoiDungRoutes.PUT("/admin/:id",permissionMiddleware.Require("Quản lý người dùng", "Sửa"), nguoiDungHandler.UpdateNguoiDungAdmin)
         }
 
         // Routes cho Hãng

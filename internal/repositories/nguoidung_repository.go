@@ -3,6 +3,7 @@ package repositories
 import (
     "github.com/tongthanhdat009/CCNLTHD/internal/models"
     "gorm.io/gorm"
+    "errors"
 )
 
 type NguoiDungRepository interface {
@@ -35,9 +36,20 @@ func (r *NguoiDungRepo) Create(nguoiDung models.NguoiDung) error {
     return r.db.Create(&nguoiDung).Error
 }
 func (r *NguoiDungRepo) Update(maNguoiDung int, nguoiDung models.NguoiDung) error {
+    updates := map[string]interface{}{
+        "HoTen":       nguoiDung.HoTen,
+        "Email":       nguoiDung.Email,
+        "SoDienThoai": nguoiDung.SoDienThoai,
+        "TinhThanh":   nguoiDung.TinhThanh,
+        "QuanHuyen":   nguoiDung.QuanHuyen,
+        "PhuongXa":    nguoiDung.PhuongXa,
+        "DuongSoNha":  nguoiDung.DuongSoNha,
+        "MaQuyen":     nguoiDung.MaQuyen,
+    }
+
     return r.db.Model(&models.NguoiDung{}).
         Where("MaNguoiDung = ?", maNguoiDung).
-        Updates(nguoiDung).Error
+        Updates(updates).Error
 }
 func (r *NguoiDungRepo) CheckNameExists(name string) (bool, error) {
     var count int64
@@ -91,6 +103,9 @@ func (r *NguoiDungRepo) GetNguoiDungByID(maNguoiDung int) (*models.NguoiDung, er
     var nguoiDung models.NguoiDung
     err := r.db.Preload("Quyen").First(&nguoiDung, maNguoiDung).Error
     if err != nil {
+        if errors.Is(err, gorm.ErrRecordNotFound) {
+            return nil, errors.New("người dùng không tồn tại")
+        }
         return nil, err
     }
     return &nguoiDung, nil

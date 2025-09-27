@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"net/http"
-
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/tongthanhdat009/CCNLTHD/internal/services"
@@ -46,6 +46,43 @@ func (pm *PermissionMiddleware) Require(maChucNang string, chiTiet string) gin.H
 
 		if !hasPermission {
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "No permission"})
+			return
+		}
+
+		c.Next()
+	}
+}
+func (pm *PermissionMiddleware) RequireUserIDMatch() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		claimsRaw, exists := c.Get("user")
+		if !exists {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Chưa đăng nhập"})
+			return
+		}
+
+		claims, ok := claimsRaw.(jwt.MapClaims)
+		if !ok {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Token không hợp lệ"})
+			return
+		}
+
+		// Lấy ma_nguoi_dung từ token
+		tokenUserID, ok := claims["ma_nguoi_dung"].(float64)
+		if !ok {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Không tìm thấy ID người dùng trong token"})
+			return
+		}
+
+		// Lấy id từ URL param
+		paramID := c.Param("id")
+		if paramID == "" {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Thiếu tham số ID người dùng"})
+			return
+		}
+		// So sánh
+
+		if paramID != fmt.Sprintf("%v", int(tokenUserID)) {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "ID người dùng không khớp với token"})
 			return
 		}
 

@@ -32,7 +32,6 @@ type Quyen struct {
     ChucNangs  []ChucNang    `gorm:"-" json:"chuc_nangs,omitempty"` // Không ánh xạ trực tiếp, sẽ lấy qua bảng PhanQuyen
 }
 
-
 // --- Cung cấp tên bảng cho GORM ---
 func (NguoiDung) TableName() string {
     return "NguoiDung"
