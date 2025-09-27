@@ -35,28 +35,6 @@ func SetupRoutes(r *gin.Engine, hangHoaHandler *handlers.HangHoaHandler, donHang
 			nguoiDungRoutes.PATCH("/:id", nguoiDungHandler.UpdateNguoiDung)
 		}
 
-		// Routes cho Hãng
-		hangRoutes := api.Group("/hang")
-		{
-			hangRoutes.GET("", hangHandler.GetAllHang)
-			hangRoutes.DELETE("/:id", hangHandler.DeleteHang)
-			hangRoutes.GET("/:id", hangHandler.GetHangByID)
-			hangRoutes.GET("/search/:tenhang", hangHandler.GetHangByName)
-			hangRoutes.POST("", hangHandler.CreateHang)
-			hangRoutes.PUT("", hangHandler.UpdateHang)
-		}
-
-		// Routes cho Nhà Cung Cấp
-		nhaCungCapRoutes := api.Group("/nhacungcap")
-		{
-			nhaCungCapRoutes.GET("", nhaCungCap.GetAllNhaCungCap)
-			nhaCungCapRoutes.POST("", nhaCungCap.CreateNhaCungCap)
-			nhaCungCapRoutes.PUT("", nhaCungCap.UpdateNhaCungCap)
-			nhaCungCapRoutes.DELETE("/:id", nhaCungCap.DeleteNhaCungCap)
-			nhaCungCapRoutes.GET("/:id", nhaCungCap.GetNhaCungCapByID)
-			nhaCungCapRoutes.GET("/search/:tenncc", nhaCungCap.GetNhaCungCapByName)
-		}
-
 		// Routes cho Giỏ Hàng
 		gioHangRoutes := api.Group("/giohang")
 		{
@@ -75,6 +53,28 @@ func SetupRoutes(r *gin.Engine, hangHoaHandler *handlers.HangHoaHandler, donHang
 			// khuyenMaiRoutes.DELETE("/:id", khuyenMaiHandler.XoaKhuyenMai)
 			// khuyenMaiRoutes.GET("/:id", khuyenMaiHandler.GetKhuyenMaiByID)
 			// khuyenMaiRoutes.GET("/search/:tenkm", khuyenMaiHandler.GetKhuyenMaiByName)
+		}
+
+		// Routes cho Hãng
+		hangRoutes := api.Group("/hang")
+		{
+			hangRoutes.GET("", permissionMiddleware.Require("Quản lý hãng", "Xem"), hangHandler.GetAllHang)
+			hangRoutes.DELETE("/:id", permissionMiddleware.Require("Quản lý hãng", "Xóa"), hangHandler.DeleteHang)
+			hangRoutes.GET("/:id", permissionMiddleware.Require("Quản lý hãng", "Xem"), hangHandler.GetHangByID)
+			hangRoutes.GET("/search/:tenhang", permissionMiddleware.Require("Quản lý hãng", "Xem"), hangHandler.GetHangByName)
+			hangRoutes.POST("", permissionMiddleware.Require("Quản lý hãng", "Thêm"), hangHandler.CreateHang)
+			hangRoutes.PUT("", permissionMiddleware.Require("Quản lý hãng", "Sửa"), hangHandler.UpdateHang)
+		}
+
+		// Routes cho Nhà Cung Cấp
+		nhaCungCapRoutes := api.Group("/nhacungcap")
+		{
+			nhaCungCapRoutes.GET("", permissionMiddleware.Require("Quản lý nhà cung cấp", "Xem"), nhaCungCap.GetAllNhaCungCap)
+			nhaCungCapRoutes.POST("", permissionMiddleware.Require("Quản lý nhà cung cấp", "Thêm"), nhaCungCap.CreateNhaCungCap)
+			nhaCungCapRoutes.PUT("", permissionMiddleware.Require("Quản lý nhà cung cấp", "Sửa"), nhaCungCap.UpdateNhaCungCap)
+			nhaCungCapRoutes.DELETE("/:id", permissionMiddleware.Require("Quản lý nhà cung cấp", "Xóa"), nhaCungCap.DeleteNhaCungCap)
+			nhaCungCapRoutes.GET("/:id", permissionMiddleware.Require("Quản lý nhà cung cấp", "Xem"), nhaCungCap.GetNhaCungCapByID)
+			nhaCungCapRoutes.GET("/search/:tenncc", permissionMiddleware.Require("Quản lý nhà cung cấp", "Xem"), nhaCungCap.GetNhaCungCapByName)
 		}
 	}
 }
