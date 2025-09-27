@@ -35,7 +35,7 @@ type GioHang struct {
 	MaNguoiDung int     `gorm:"primaryKey;column:MaNguoiDung" json:"ma_nguoi_dung"`
 	MaBienThe   int     `gorm:"primaryKey;column:MaBienThe" json:"ma_bien_the"`
 	SoLuong     int     `gorm:"column:SoLuong" json:"so_luong"`
-	Gia         float64 `gorm:"column:Gia" json:"gia"`
+	Gia         float64 `gorm:"-" json:"gia,omitempty"` // Trường này không lưu trong DB, chỉ để hiển thị
 }
 
 // --- Cung cấp tên bảng cho GORM ---

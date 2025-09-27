@@ -68,11 +68,16 @@ func main() {
 	gioHangService := services.NewGioHangService(gioHangRepo)
 	gioHangHandler := handlers.NewGioHangHandler(gioHangService)
 
+	//Khuyến mãi
+	khuyenMaiRepo := repositories.NewKhuyenMaiRepository(database)
+	khuyenMaiService := services.NewKhuyenMaiService(khuyenMaiRepo)
+	khuyenMaiHandler := handlers.NewKhuyenMaiHandler(khuyenMaiService)
+
 	// --- Thiết lập server ---
 	r := gin.Default()
 
 	// Gọi hàm để thiết lập tất cả các routes
-	routes.SetupRoutes(r, hangHoaHandler, donHangHandler, nguoiDungHandler, hangHandler, nhaCungCapHandler, dangKyHandler, dangNhapHandler, permissionMiddleware, gioHangHandler)
+	routes.SetupRoutes(r, hangHoaHandler, donHangHandler, nguoiDungHandler, hangHandler, nhaCungCapHandler, dangKyHandler, dangNhapHandler, permissionMiddleware, gioHangHandler, khuyenMaiHandler)
 
 	log.Println("Starting server on :8080")
 	if err := r.Run(":8080"); err != nil {

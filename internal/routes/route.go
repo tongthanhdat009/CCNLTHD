@@ -7,7 +7,7 @@ import (
 )
 
 // SetupRoutes định nghĩa tất cả các route cho ứng dụng.
-func SetupRoutes(r *gin.Engine, hangHoaHandler *handlers.HangHoaHandler, donHangHandler *handlers.DonHangHandler, nguoiDungHandler *handlers.NguoiDungHandler, hangHandler *handlers.HangHandler, nhaCungCap *handlers.NhaCungCapHandler, dangKyHandler *handlers.DangKyHandler, dangNhapHandler *handlers.DangNhapHandler, permissionMiddleware *middleware.PermissionMiddleware, gioHangHandler *handlers.GioHangHandler) {
+func SetupRoutes(r *gin.Engine, hangHoaHandler *handlers.HangHoaHandler, donHangHandler *handlers.DonHangHandler, nguoiDungHandler *handlers.NguoiDungHandler, hangHandler *handlers.HangHandler, nhaCungCap *handlers.NhaCungCapHandler, dangKyHandler *handlers.DangKyHandler, dangNhapHandler *handlers.DangNhapHandler, permissionMiddleware *middleware.PermissionMiddleware, gioHangHandler *handlers.GioHangHandler, khuyenMaiHandler *handlers.KhuyenMaiHandler) {
 	// Các route không cần xác thực
 
 	r.POST("/api/dangky", dangKyHandler.CreateNguoiDung)
@@ -64,6 +64,17 @@ func SetupRoutes(r *gin.Engine, hangHoaHandler *handlers.HangHoaHandler, donHang
 			gioHangRoutes.PUT("", gioHangHandler.SuaGioHang)
 			gioHangRoutes.DELETE("", gioHangHandler.XoaGioHang)
 			gioHangRoutes.GET("/:id", gioHangHandler.GetAll)
+		}
+
+		// Routes cho Khuyến Mãi
+		khuyenMaiRoutes := api.Group("/khuyenmai")
+		{
+			// khuyenMaiRoutes.GET("", khuyenMaiHandler.GetAllKhuyenMai)
+			khuyenMaiRoutes.POST("", khuyenMaiHandler.TaoKhuyenMai)
+			// khuyenMaiRoutes.PUT("", khuyenMaiHandler.SuaKhuyenMai)
+			// khuyenMaiRoutes.DELETE("/:id", khuyenMaiHandler.XoaKhuyenMai)
+			// khuyenMaiRoutes.GET("/:id", khuyenMaiHandler.GetKhuyenMaiByID)
+			// khuyenMaiRoutes.GET("/search/:tenkm", khuyenMaiHandler.GetKhuyenMaiByName)
 		}
 	}
 }
