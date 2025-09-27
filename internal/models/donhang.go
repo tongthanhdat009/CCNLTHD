@@ -3,38 +3,39 @@ package models
 import "time"
 
 type DonHang struct {
-    MaDonHang          int       `gorm:"primaryKey;column:MaDonHang" json:"ma_don_hang"`
-    MaNguoiDung        int       `gorm:"column:MaNguoiDung" json:"ma_nguoi_dung"`
-    NgayTao            time.Time `gorm:"column:NgayTao;autoCreateTime" json:"ngay_tao"`
-    TrangThai          string    `gorm:"column:TrangThai" json:"trang_thai"`
-    TongTien           float64   `gorm:"column:TongTien" json:"tong_tien"`
-    TinhThanh          string    `gorm:"column:TinhThanh" json:"tinh_thanh"`
-    QuanHuyen          string    `gorm:"column:QuanHuyen" json:"quan_huyen"`
-    PhuongXa           string    `gorm:"column:PhuongXa" json:"phuong_xa"`
-    DuongSoNha         string    `gorm:"column:DuongSoNha" json:"duong_so_nha"`
-    PhuongThucThanhToan string    `gorm:"column:PhuongThucThanhToan" json:"phuong_thuc_thanh_toan"`
+	MaDonHang           int       `gorm:"primaryKey;column:MaDonHang" json:"ma_don_hang"`
+	MaNguoiDung         int       `gorm:"column:MaNguoiDung" json:"ma_nguoi_dung"`
+	NgayTao             time.Time `gorm:"column:NgayTao;autoCreateTime" json:"ngay_tao"`
+	TrangThai           string    `gorm:"column:TrangThai" json:"trang_thai"`
+	TongTien            float64   `gorm:"column:TongTien" json:"tong_tien"`
+	TinhThanh           string    `gorm:"column:TinhThanh" json:"tinh_thanh"`
+	QuanHuyen           string    `gorm:"column:QuanHuyen" json:"quan_huyen"`
+	PhuongXa            string    `gorm:"column:PhuongXa" json:"phuong_xa"`
+	DuongSoNha          string    `gorm:"column:DuongSoNha" json:"duong_so_nha"`
+	PhuongThucThanhToan string    `gorm:"column:PhuongThucThanhToan" json:"phuong_thuc_thanh_toan"`
 
-    // --- Mối quan hệ One-to-Many ---
-    // Một đơn hàng có nhiều chi tiết đơn hàng
-    ChiTietDonHangs []ChiTietDonHang `gorm:"foreignKey:MaDonHang" json:"chi_tiet_don_hangs,omitempty"`
+	// --- Mối quan hệ One-to-Many ---
+	// Một đơn hàng có nhiều chi tiết đơn hàng
+	ChiTietDonHangs []ChiTietDonHang `gorm:"foreignKey:MaDonHang" json:"chi_tiet_don_hangs,omitempty"`
 }
 
 type ChiTietDonHang struct {
-    MaChiTiet int     `gorm:"primaryKey;column:MaChiTiet" json:"ma_chi_tiet"`
-    MaDonHang int     `gorm:"column:MaDonHang" json:"ma_don_hang"`
-    MaBienThe int     `gorm:"column:MaBienThe" json:"ma_bien_the"` // Đổi từ MaSanPham sang MaBienThe để rõ ràng hơn
-    SoLuong   int     `gorm:"column:SoLuong" json:"so_luong"`
-    GiaBan    float64 `gorm:"column:GiaBan" json:"gia_ban"`
+	MaChiTiet int     `gorm:"primaryKey;column:MaChiTiet" json:"ma_chi_tiet"`
+	MaDonHang int     `gorm:"column:MaDonHang" json:"ma_don_hang"`
+	MaBienThe int     `gorm:"column:MaBienThe" json:"ma_bien_the"` // Đổi từ MaSanPham sang MaBienThe để rõ ràng hơn
+	SoLuong   int     `gorm:"column:SoLuong" json:"so_luong"`
+	GiaBan    float64 `gorm:"column:GiaBan" json:"gia_ban"`
 
-    // --- Mối quan hệ Many-to-One ---
-    // Chi tiết này thuộc về biến thể sản phẩm nào
-    BienThe BienThe `gorm:"foreignKey:MaBienThe" json:"bien_the,omitempty"`
+	// --- Mối quan hệ Many-to-One ---
+	// Chi tiết này thuộc về biến thể sản phẩm nào
+	BienThe BienThe `gorm:"foreignKey:MaBienThe" json:"bien_the,omitempty"`
 }
 
 type GioHang struct {
-    MaNguoiDung int `gorm:"primaryKey;column:MaNguoiDung" json:"ma_nguoi_dung"`
-    MaBienThe   int `gorm:"primaryKey;column:MaBienThe" json:"ma_bien_the"`
-    SoLuong     int `gorm:"column:SoLuong" json:"so_luong"`
+	MaNguoiDung int     `gorm:"primaryKey;column:MaNguoiDung" json:"ma_nguoi_dung"`
+	MaBienThe   int     `gorm:"primaryKey;column:MaBienThe" json:"ma_bien_the"`
+	SoLuong     int     `gorm:"column:SoLuong" json:"so_luong"`
+	Gia         float64 `gorm:"column:Gia" json:"gia"`
 }
 
 // --- Cung cấp tên bảng cho GORM ---
