@@ -62,12 +62,26 @@ func main() {
     permissionService := services.NewPermissionService(authRepo)
     permissionMiddleware := middleware.NewPermissionMiddleware(permissionService)
 
+    // Tra cứu admin
+    tracuuAdminRepo := repositories.NewTraCuuAdminRepository(database)
+    tracuuAdminService := services.NewTraCuuAdminRepository(tracuuAdminRepo)
+    traCuuAdminHandler := handlers.NewTraCuuAdminHandler(tracuuAdminService)
+
 
     // --- Thiết lập server ---
     r := gin.Default()
 
     // Gọi hàm để thiết lập tất cả các routes
-    routes.SetupRoutes(r, hangHoaHandler, donHangHandler, nguoiDungHandler, hangHandler, nhaCungCapHandler, dangKyHandler, dangNhapHandler, permissionMiddleware)
+    routes.SetupRoutes(r, 
+        hangHoaHandler, 
+        donHangHandler, 
+        nguoiDungHandler, 
+        hangHandler, 
+        nhaCungCapHandler, 
+        dangKyHandler, 
+        dangNhapHandler, 
+        permissionMiddleware, 
+        traCuuAdminHandler)
 
     log.Println("Starting server on :8080")
     if err := r.Run(":8080"); err != nil {
