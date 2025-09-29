@@ -18,7 +18,8 @@ func SetupRoutes(r *gin.Engine,
 		    permissionMiddleware *middleware.PermissionMiddleware,
 			 gioHangHandler *handlers.GioHangHandler,
 			  khuyenMaiHandler *handlers.KhuyenMaiHandler,
-			  traCuuAdminHandler *handlers.TraCuuAdminHandler) {
+			  traCuuAdminHandler *handlers.TraCuuAdminHandler,
+			  timKiemSanPhamHandler *handlers.TimKiemSanPhamHandler) {
 	// Các route không cần xác thực
 
 	r.POST("/api/dangky", dangKyHandler.CreateNguoiDung)
@@ -97,5 +98,11 @@ func SetupRoutes(r *gin.Engine,
             traCuuAdminRoutes.GET("/:seri", permissionMiddleware.Require("Tra cứu sản phẩm", "Xem"), traCuuAdminHandler.GetSanPhamBySeries)
             traCuuAdminRoutes.GET("/trangthai", permissionMiddleware.Require("Tra cứu sản phẩm", "Xem"), traCuuAdminHandler.GetSanPhamByTrangThai)
         }    
+
+		// Routes cho Tìm kiếm sản phẩm
+		timKiemSanPhamRoutes := api.Group("/timkiemsanpham")
+		{
+			timKiemSanPhamRoutes.GET("", timKiemSanPhamHandler.TimSanPham)
+		}
 	}
 }

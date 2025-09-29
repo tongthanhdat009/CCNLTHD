@@ -78,6 +78,11 @@ func main() {
 	khuyenMaiService := services.NewKhuyenMaiService(khuyenMaiRepo)
 	khuyenMaiHandler := handlers.NewKhuyenMaiHandler(khuyenMaiService)
 
+	//Tìm kiếm sản phẩm
+	timKiemSanPhamRepo := repositories.NewTimKiemSanPhamRepository(database)
+	timKiemSanPhamService := services.NewTimKiemSanPhamService(timKiemSanPhamRepo)
+	timKiemSanPhamHandler := handlers.NewTimKiemSanPhamHandler(timKiemSanPhamService)
+
 	// --- Thiết lập server ---
 	r := gin.Default()
 	// Gọi hàm để thiết lập tất cả các routes
@@ -92,7 +97,8 @@ func main() {
         permissionMiddleware, 
 		gioHangHandler,
 		khuyenMaiHandler,
-        traCuuAdminHandler)
+        traCuuAdminHandler,
+		timKiemSanPhamHandler)
 
 	log.Println("Starting server on :8080")
 	if err := r.Run(":8080"); err != nil {
