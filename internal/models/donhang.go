@@ -22,13 +22,13 @@ type DonHang struct {
 type ChiTietDonHang struct {
     MaChiTiet int     `gorm:"primaryKey;column:MaChiTiet" json:"ma_chi_tiet"`
     MaDonHang int     `gorm:"column:MaDonHang" json:"ma_don_hang"`
-    MaBienThe int     `gorm:"column:MaBienThe" json:"ma_bien_the"` // Đổi từ MaSanPham sang MaBienThe để rõ ràng hơn
+    MaSanPham int     `gorm:"column:MaSanPham" json:"ma_san_pham"`
     SoLuong   int     `gorm:"column:SoLuong" json:"so_luong"`
     GiaBan    float64 `gorm:"column:GiaBan" json:"gia_ban"`
 
     // --- Mối quan hệ Many-to-One ---
     // Chi tiết này thuộc về biến thể sản phẩm nào
-    BienThe BienThe `gorm:"foreignKey:MaBienThe" json:"bien_the,omitempty"`
+    DonHang DonHang `gorm:"foreignKey:MaDonHang" json:"don_hang,omitempty"`
 }
 
 type GioHang struct {

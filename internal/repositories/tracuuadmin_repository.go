@@ -17,11 +17,23 @@ func NewTraCuuAdminRepository(db *gorm.DB) TraCuuAdminRepository {
 }
 
 func (r *traCuuAdminRepository) GetSanPhamBySeries(seri string) (models.SanPham, error) {
-	var sanpham models.SanPham
-	if err := r.db.Preload("ChiTietPhieuNhap").Preload("ChiTietPhieuNhap.PhieuNhap").Where("Seri = ?", seri).First(&sanpham).Error; err != nil {
-		return models.SanPham{}, err
-	}
-	return sanpham, nil
+    var sanpham models.SanPham
+    if err := r.db.
+				Preload("ChiTietDonHangs").
+				Preload("ChiTietDonHangs.DonHang").
+				Preload("ChiTietPhieuNhap").
+                Preload("ChiTietPhieuNhap.PhieuNhap").
+                Preload("ChiTietPhieuNhap.BienThe").
+                Preload("ChiTietPhieuNhap.BienThe.HangHoa").
+                Preload("ChiTietPhieuNhap.BienThe.HangHoa.Hang").
+                Preload("ChiTietPhieuNhap.BienThe.HangHoa.DanhMuc").
+                Preload("ChiTietPhieuNhap.BienThe.HangHoa.KhuyenMai").
+                Preload("ChiTietPhieuNhap.PhieuNhap.NguoiDung").
+                Preload("ChiTietPhieuNhap.PhieuNhap.NhaCungCap").
+                Where("Seri = ?", seri).First(&sanpham).Error; err != nil {
+        return models.SanPham{}, err
+    }
+    return sanpham, nil
 }
 
 func (r *traCuuAdminRepository) GetSanPhamByTrangThai(trangThai string) ([]models.SanPham, error) {

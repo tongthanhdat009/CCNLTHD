@@ -43,6 +43,7 @@ type SanPham struct {
     TrangThai          string `gorm:"column:TrangThai" json:"trang_thai"`
 
     ChiTietPhieuNhap ChiTietPhieuNhap `gorm:"foreignKey:MaChiTietPhieuNhap" json:"chi_tiet_phieu_nhap,omitempty"`
+    ChiTietDonHangs []ChiTietDonHang `gorm:"foreignKey:MaSanPham" json:"chi_tiet_don_hangs,omitempty"`
 }
 
 // --- Cung cấp tên bảng cho GORM ---

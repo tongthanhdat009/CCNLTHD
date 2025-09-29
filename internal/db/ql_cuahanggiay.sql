@@ -924,3 +924,13 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+-- Thêm đơn hàng mẫu
+INSERT INTO `donhang` (`MaDonHang`, `MaNguoiDung`, `NgayTao`, `TrangThai`, `TongTien`, `TinhThanh`, `QuanHuyen`, `PhuongXa`, `DuongSoNha`, `PhuongThucThanhToan`) 
+VALUES (1, 3, '2025-09-26 10:00:00', 'Đã giao', 2500000.00, 'TP. Hồ Chí Minh', 'Quận 1', 'Phường Bến Nghé', 'Số 1 Nguyễn Huệ', 'Tiền mặt');
+
+-- Thêm chi tiết đơn hàng mẫu (liên kết với sản phẩm MaSanPham = 1)
+INSERT INTO `chitietdonhang` (`MaChiTiet`, `MaDonHang`, `MaSanPham`, `GiaBan`) 
+VALUES (1, 1, 1, 2500000.00);
+
+-- Cập nhật trạng thái sản phẩm thành 'Đã bán'
+UPDATE `sanpham` SET `TrangThai` = 'Đã bán' WHERE `MaSanPham` = 1;
