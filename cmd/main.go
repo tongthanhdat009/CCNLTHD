@@ -67,6 +67,11 @@ func main() {
 	gioHangRepo := repositories.NewGioHangRepository(database)
 	gioHangService := services.NewGioHangService(gioHangRepo)
 	gioHangHandler := handlers.NewGioHangHandler(gioHangService)
+	
+	// Tra cứu admin
+    tracuuAdminRepo := repositories.NewTraCuuAdminRepository(database)
+    tracuuAdminService := services.NewTraCuuAdminRepository(tracuuAdminRepo)
+    traCuuAdminHandler := handlers.NewTraCuuAdminHandler(tracuuAdminService)
 
 	//Khuyến mãi
 	khuyenMaiRepo := repositories.NewKhuyenMaiRepository(database)
@@ -75,9 +80,19 @@ func main() {
 
 	// --- Thiết lập server ---
 	r := gin.Default()
-
 	// Gọi hàm để thiết lập tất cả các routes
-	routes.SetupRoutes(r, hangHoaHandler, donHangHandler, nguoiDungHandler, hangHandler, nhaCungCapHandler, dangKyHandler, dangNhapHandler, permissionMiddleware, gioHangHandler, khuyenMaiHandler)
+	routes.SetupRoutes(r, 
+        hangHoaHandler, 
+        donHangHandler, 
+        nguoiDungHandler, 
+        hangHandler, 
+        nhaCungCapHandler, 
+        dangKyHandler, 
+        dangNhapHandler, 
+        permissionMiddleware, 
+		gioHangHandler,
+		khuyenMaiHandler,
+        traCuuAdminHandler)
 
 	log.Println("Starting server on :8080")
 	if err := r.Run(":8080"); err != nil {

@@ -7,7 +7,18 @@ import (
 )
 
 // SetupRoutes định nghĩa tất cả các route cho ứng dụng.
-func SetupRoutes(r *gin.Engine, hangHoaHandler *handlers.HangHoaHandler, donHangHandler *handlers.DonHangHandler, nguoiDungHandler *handlers.NguoiDungHandler, hangHandler *handlers.HangHandler, nhaCungCap *handlers.NhaCungCapHandler, dangKyHandler *handlers.DangKyHandler, dangNhapHandler *handlers.DangNhapHandler, permissionMiddleware *middleware.PermissionMiddleware, gioHangHandler *handlers.GioHangHandler, khuyenMaiHandler *handlers.KhuyenMaiHandler) {
+func SetupRoutes(r *gin.Engine,
+	 hangHoaHandler *handlers.HangHoaHandler,
+	  donHangHandler *handlers.DonHangHandler,
+	   nguoiDungHandler *handlers.NguoiDungHandler,
+	    hangHandler *handlers.HangHandler,
+		 nhaCungCap *handlers.NhaCungCapHandler,
+		  dangKyHandler *handlers.DangKyHandler,
+		   dangNhapHandler *handlers.DangNhapHandler,
+		    permissionMiddleware *middleware.PermissionMiddleware,
+			 gioHangHandler *handlers.GioHangHandler,
+			  khuyenMaiHandler *handlers.KhuyenMaiHandler,
+			  traCuuAdminHandler *handlers.TraCuuAdminHandler) {
 	// Các route không cần xác thực
 
 	r.POST("/api/dangky", dangKyHandler.CreateNguoiDung)
@@ -79,5 +90,12 @@ func SetupRoutes(r *gin.Engine, hangHoaHandler *handlers.HangHoaHandler, donHang
 			nhaCungCapRoutes.GET("/:id", permissionMiddleware.Require("Quản lý nhà cung cấp", "Xem"), nhaCungCap.GetNhaCungCapByID)
 			nhaCungCapRoutes.GET("/search/:tenncc", permissionMiddleware.Require("Quản lý nhà cung cấp", "Xem"), nhaCungCap.GetNhaCungCapByName)
 		}
+		
+		// Routes cho Tra cứu admin
+        traCuuAdminRoutes := api.Group("/tracuuadmin")
+        {
+            traCuuAdminRoutes.GET("/:seri", permissionMiddleware.Require("Tra cứu sản phẩm", "Xem"), traCuuAdminHandler.GetSanPhamBySeries)
+            traCuuAdminRoutes.GET("/trangthai", permissionMiddleware.Require("Tra cứu sản phẩm", "Xem"), traCuuAdminHandler.GetSanPhamByTrangThai)
+        }    
 	}
 }

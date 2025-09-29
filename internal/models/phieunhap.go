@@ -29,6 +29,7 @@ type ChiTietPhieuNhap struct {
     NgaySanXuat     sql.NullTime  `gorm:"column:NgaySanXuat" json:"ngay_san_xuat"`
     ThoiGianBaoHanh sql.NullInt64 `gorm:"column:ThoiGianBaoHanh" json:"thoi_gian_bao_hanh"`
 
+    PhieuNhap PhieuNhap `gorm:"foreignKey:MaPhieuNhap" json:"phieu_nhap,omitempty"`
     // Mối quan hệ
     BienThe  BienThe   `gorm:"foreignKey:MaBienthe" json:"bien_the,omitempty"`
     SanPhams []SanPham `gorm:"foreignKey:MaChiTietPhieuNhap" json:"san_phams,omitempty"`
@@ -40,6 +41,9 @@ type SanPham struct {
     MaChiTietPhieuNhap int `gorm:"column:MaChiTietPhieuNhap" json:"-"`
     Seri               string `gorm:"column:Seri" json:"seri"`
     TrangThai          string `gorm:"column:TrangThai" json:"trang_thai"`
+
+    ChiTietPhieuNhap ChiTietPhieuNhap `gorm:"foreignKey:MaChiTietPhieuNhap" json:"chi_tiet_phieu_nhap,omitempty"`
+    ChiTietDonHangs []ChiTietDonHang `gorm:"foreignKey:MaSanPham" json:"chi_tiet_don_hangs,omitempty"`
 }
 
 // --- Cung cấp tên bảng cho GORM ---
