@@ -30,7 +30,11 @@ func SetupRoutes(r *gin.Engine,
 		// Routes cho Hàng Hóa
 		hangHoaRoutes := api.Group("/hanghoa")
 		{
-			hangHoaRoutes.GET("", hangHoaHandler.GetAllHangHoa)
+			hangHoaRoutes.GET("", permissionMiddleware.Require("Quản lý hàng hóa", "Xem"), hangHoaHandler.GetAllHangHoa)
+			hangHoaRoutes.POST("", permissionMiddleware.Require("Quản lý hàng hóa", "Xử lý"), hangHoaHandler.CreateHangHoa)
+			hangHoaRoutes.POST("/update/:id", permissionMiddleware.Require("Quản lý hàng hóa", "Xử lý"), hangHoaHandler.UpdateHangHoa)
+			hangHoaRoutes.GET("/search", permissionMiddleware.Require("Quản lý hàng hóa", "Xem"), hangHoaHandler.SearchHangHoa)
+			
 		}
 
 		// Routes cho Đơn Hàng
