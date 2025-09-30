@@ -85,6 +85,7 @@ func main() {
 
 	// --- Thiết lập server ---
 	r := gin.Default()
+	r.Static("/AnhHangHoa", "./static/AnhHangHoa")
 	// Gọi hàm để thiết lập tất cả các routes
 	routes.SetupRoutes(r, 
         hangHoaHandler, 
