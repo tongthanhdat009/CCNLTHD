@@ -66,12 +66,11 @@ func SetupRoutes(r *gin.Engine,
 		// Routes cho Khuyến Mãi
 		khuyenMaiRoutes := api.Group("/khuyenmai")
 		{
-			// khuyenMaiRoutes.GET("", khuyenMaiHandler.GetAllKhuyenMai)
+			khuyenMaiRoutes.GET("", khuyenMaiHandler.GetAll)
 			khuyenMaiRoutes.POST("", khuyenMaiHandler.TaoKhuyenMai)
-			// khuyenMaiRoutes.PUT("", khuyenMaiHandler.SuaKhuyenMai)
-			// khuyenMaiRoutes.DELETE("/:id", khuyenMaiHandler.XoaKhuyenMai)
-			// khuyenMaiRoutes.GET("/:id", khuyenMaiHandler.GetKhuyenMaiByID)
-			// khuyenMaiRoutes.GET("/search/:tenkm", khuyenMaiHandler.GetKhuyenMaiByName)
+			khuyenMaiRoutes.PUT("", khuyenMaiHandler.SuaKhuyenMai)
+			khuyenMaiRoutes.DELETE("/:id", khuyenMaiHandler.XoaKhuyenMai)
+			khuyenMaiRoutes.GET("/:id", khuyenMaiHandler.GetByID)
 		}
 
 		// Routes cho Hãng

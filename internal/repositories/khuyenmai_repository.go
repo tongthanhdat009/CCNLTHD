@@ -2,18 +2,17 @@ package repositories
 
 import (
 	"errors"
-	"fmt"
-
 	"github.com/tongthanhdat009/CCNLTHD/internal/models"
 	"gorm.io/gorm"
 )
 
 type KhuyenMaiRepository interface {
-	TaoKhuyenMai(khuyenMai models.KhuyenMai) error
-	// 	SuaKhuyenMai(khuyenMai models.KhuyenMai) error
-	// 	XoaKhuyenMai(makhuyenmai int) error
-	// 	GetAll() ([]models.KhuyenMai, error)
-	// 	GetByID(makhuyenmai int) (models.KhuyenMai, error)
+	TaoKhuyenMai(khuyenMai *models.KhuyenMai) error
+	SuaKhuyenMai(makhuyenmai int, khuyenMai models.KhuyenMai) error
+	XoaKhuyenMai(makhuyenmai int) error
+	KiemTraTenTonTai(tenkhuyenmai string) (bool, error)
+	GetAll() ([]models.KhuyenMai, error)
+	GetByID(makhuyenmai int) (models.KhuyenMai, error)
 }
 
 type KhuyenMaiRepo struct {
@@ -24,34 +23,48 @@ func NewKhuyenMaiRepository(db *gorm.DB) KhuyenMaiRepository {
 	return &KhuyenMaiRepo{db: db}
 }
 
-func (r *KhuyenMaiRepo) TaoKhuyenMai(khuyenMai models.KhuyenMai) error {
-	return r.db.Create(&khuyenMai).Error
+func (r *KhuyenMaiRepo) TaoKhuyenMai(khuyenMai *models.KhuyenMai) error {
+	return r.db.Create(khuyenMai).Error
 }
 
-// func (r *KhuyenMaiRepo) KiemTraTenTonTai(tenkhuyenmai string) bool {
-// 	var khuyenMai models.KhuyenMai
-// 	err := r.db.Where("TenKhuyenMai = ?", tenkhuyenmai).First(&khuyenMai).Error
-// 	if err != nil {
-// 		return false // Không tồn tại
-// 	}
-// 	return true // Đã tồn tại
-// }
-
-func (r *KhuyenMaiRepo) SuaKhuyenMai(khuyenMai models.KhuyenMai) error {
-	return r.db.Where("MaKhuyenMai = ?", khuyenMai.MaKhuyenMai).Updates(&khuyenMai).Error
+func (r *KhuyenMaiRepo) KiemTraTenTonTai(tenkhuyenmai string) (bool, error) {
+	var khuyenMai models.KhuyenMai
+	err := r.db.Where("TenKhuyenMai = ?", tenkhuyenmai).First(&khuyenMai).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return false, nil // Không tồn tại
+	}
+	if err != nil {
+		return false, err // Lỗi DB
+	}
+	return true, nil // Đã tồn tại
 }
 
-func (r *KhuyenMaiRepo) XoaKhuyenMai(khuyenMai models.KhuyenMai) error {
-	// Cách 1: Xóa theo điều kiện (recommended)
-	result := r.db.Where("MaKhuyenMai = ?", khuyenMai.MaKhuyenMai).Delete(&models.KhuyenMai{})
+func (r *KhuyenMaiRepo) SuaKhuyenMai(makhuyenmai int, khuyenMai models.KhuyenMai) error {
+	return r.db.Model(&models.KhuyenMai{}).Where("MaKhuyenMai = ?", makhuyenmai).Updates(khuyenMai).Error
+}
+
+func (r *KhuyenMaiRepo) XoaKhuyenMai(makhuyenmai int) error {
+	result := r.db.Where("MaKhuyenMai = ?", makhuyenmai).
+		Delete(&models.KhuyenMai{})
 	if result.Error != nil {
 		return result.Error
 	}
-	fmt.Print(result)
 	if result.RowsAffected == 0 {
 		return errors.New("không tìm thấy record để xóa")
 	}
 	return nil
+}
+
+func (r *KhuyenMaiRepo) GetAll() ([]models.KhuyenMai, error) {
+	var khuyenMais []models.KhuyenMai
+	err := r.db.Find(&khuyenMais).Error
+	return khuyenMais, err
+}
+
+func (r *KhuyenMaiRepo) GetByID(makhuyenmai int) (models.KhuyenMai, error) {
+	var khuyenMai models.KhuyenMai
+	err := r.db.Where("MaKhuyenMai = ?", makhuyenmai).First(&khuyenMai).Error
+	return khuyenMai, err
 }
 
 // func (r *GioHangRepo) GetAll(manguoidung int) ([]models.GioHang, error) {
