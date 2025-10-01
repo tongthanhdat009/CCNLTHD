@@ -67,11 +67,11 @@ func main() {
 	gioHangRepo := repositories.NewGioHangRepository(database)
 	gioHangService := services.NewGioHangService(gioHangRepo)
 	gioHangHandler := handlers.NewGioHangHandler(gioHangService)
-	
+
 	// Tra cứu admin
-    tracuuAdminRepo := repositories.NewTraCuuAdminRepository(database)
-    tracuuAdminService := services.NewTraCuuAdminRepository(tracuuAdminRepo)
-    traCuuAdminHandler := handlers.NewTraCuuAdminHandler(tracuuAdminService)
+	tracuuAdminRepo := repositories.NewTraCuuAdminRepository(database)
+	tracuuAdminService := services.NewTraCuuAdminRepository(tracuuAdminRepo)
+	traCuuAdminHandler := handlers.NewTraCuuAdminHandler(tracuuAdminService)
 
 	//Khuyến mãi
 	khuyenMaiRepo := repositories.NewKhuyenMaiRepository(database)
@@ -82,24 +82,29 @@ func main() {
 	timKiemSanPhamRepo := repositories.NewTimKiemSanPhamRepository(database)
 	timKiemSanPhamService := services.NewTimKiemSanPhamService(timKiemSanPhamRepo)
 	timKiemSanPhamHandler := handlers.NewTimKiemSanPhamHandler(timKiemSanPhamService)
-
+	//Đánh giá
+	reviewRepo := repositories.NewReviewRepository(database)
+	reviewService := services.NewReviewService(reviewRepo)
+	reviewHandler := handlers.NewReviewHandler(reviewService)
 	// --- Thiết lập server ---
 	r := gin.Default()
 	r.Static("/AnhHangHoa", "./static/AnhHangHoa")
 	// Gọi hàm để thiết lập tất cả các routes
-	routes.SetupRoutes(r, 
-        hangHoaHandler, 
-        donHangHandler, 
-        nguoiDungHandler, 
-        hangHandler, 
-        nhaCungCapHandler, 
-        dangKyHandler, 
-        dangNhapHandler, 
-        permissionMiddleware, 
+	routes.SetupRoutes(r,
+		hangHoaHandler,
+		donHangHandler,
+		nguoiDungHandler,
+		hangHandler,
+		nhaCungCapHandler,
+		dangKyHandler,
+		dangNhapHandler,
+		permissionMiddleware,
 		gioHangHandler,
 		khuyenMaiHandler,
-        traCuuAdminHandler,
-		timKiemSanPhamHandler)
+		traCuuAdminHandler,
+		timKiemSanPhamHandler,
+		reviewHandler,
+	)
 
 	log.Println("Starting server on :8080")
 	if err := r.Run(":8080"); err != nil {
