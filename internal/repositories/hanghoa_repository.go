@@ -17,6 +17,7 @@ type HangHoaRepository interface {
         trangThai string,
         maKhuyenMai string,
     ) ([]models.HangHoa, error)
+    GetHangHoaByID(maHangHoa int) (*models.HangHoa, error)
     CountByHangID(hangID int) (int64, error)
     ExistsHang(maHang int) (bool, error)
     ExistsDanhMuc(maDanhMuc int) (bool, error)
@@ -29,6 +30,15 @@ type hangHoaRepo struct {
 
 func NewHangHoaRepository(db *gorm.DB) HangHoaRepository {
     return &hangHoaRepo{db: db}
+}
+
+func (r *hangHoaRepo) GetHangHoaByID(maHangHoa int) (*models.HangHoa, error) {
+    var hangHoa models.HangHoa
+    err := r.db.Preload("Hang").Preload("DanhMuc").Preload("BienThes").First(&hangHoa, maHangHoa).Error
+    if err != nil {
+        return nil, err
+    }
+    return &hangHoa, nil
 }
 
 func (r *hangHoaRepo) GetAll() ([]models.HangHoa, error) {
