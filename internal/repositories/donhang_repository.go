@@ -1,25 +1,222 @@
 package repositories
 
 import (
-    "github.com/tongthanhdat009/CCNLTHD/internal/models"
-    "gorm.io/gorm"
+	"errors"
+	"time"
+
+	"github.com/tongthanhdat009/CCNLTHD/internal/models"
+	"gorm.io/gorm"
 )
 
 type DonHangRepository interface {
-    GetAll() ([]models.DonHang, error)
+	// CRUD cơ bản
+	CreateDonHang(donHang *models.DonHang) error
+	GetByID(maDonHang int) (models.DonHang, error)
+	GetAll() ([]models.DonHang, error)
+	UpdateStatus(maDonHang int, trangThai string) error
+	UpdateDonHang(donHang *models.DonHang) error
+	DeleteDonHang(maDonHang int) error
+
+	// Tìm kiếm đơn hàng
+	SearchDonHang(keyword string, trangThai string, fromDate, toDate time.Time) ([]models.DonHang, error)
+	GetByNguoiDung(maNguoiDung int) ([]models.DonHang, error)
+	GetByStatus(trangThai string) ([]models.DonHang, error)
+
+	// Xem chi tiết đơn hàng
+	GetDetailByID(maDonHang int) (models.DonHang, error)
+
+	// Validation
+	ExistsDonHang(maDonHang int) (bool, error)
+	GetCurrentStatus(maDonHang int) (string, error)
+	CanUpdateStatus(currentStatus, newStatus string) bool
 }
 
 type DonHangRepo struct {
-    db *gorm.DB
+	db *gorm.DB
 }
 
 func NewDonHangRepository(db *gorm.DB) DonHangRepository {
-    return &DonHangRepo{db: db}
+	return &DonHangRepo{db: db}
 }
 
+// CreateDonHang - Tạo đơn hàng mới
+func (r *DonHangRepo) CreateDonHang(donHang *models.DonHang) error {
+	// Thiết lập trạng thái mặc định nếu chưa có
+	if donHang.TrangThai == "" {
+		donHang.TrangThai = "Chờ xác nhận"
+	}
+	return r.db.Create(donHang).Error
+}
+
+// GetByID - Lấy đơn hàng theo mã (không load chi tiết)
+func (r *DonHangRepo) GetByID(maDonHang int) (models.DonHang, error) {
+	var donHang models.DonHang
+	err := r.db.Where("ma_don_hang = ?", maDonHang).First(&donHang).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return donHang, errors.New("đơn hàng không tồn tại")
+		}
+		return donHang, err
+	}
+	return donHang, nil
+}
+
+// GetDetailByID - Xem chi tiết đầy đủ đơn hàng (bao gồm chi tiết và thông tin sản phẩm)
+func (r *DonHangRepo) GetDetailByID(maDonHang int) (models.DonHang, error) {
+	var donHang models.DonHang
+	err := r.db.
+		Preload("ChiTietDonHangs").
+		Where("ma_don_hang = ?", maDonHang).
+		First(&donHang).Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return donHang, errors.New("đơn hàng không tồn tại")
+		}
+		return donHang, err
+	}
+	return donHang, nil
+}
+
+// GetAll - Lấy tất cả đơn hàng
 func (r *DonHangRepo) GetAll() ([]models.DonHang, error) {
-    var DonHangs []models.DonHang
-    // Sử dụng Preload để tải các dữ liệu liên quan
-    err := r.db.Preload("ChiTietDonHangs.BienThe").Find(&DonHangs).Error
-    return DonHangs, err
+	var donHangs []models.DonHang
+	err := r.db.
+		Preload("ChiTietDonHangs").
+		Order("ngay_tao DESC").
+		Find(&donHangs).Error
+	return donHangs, err
+}
+
+// UpdateStatus - Duyệt và thay đổi trạng thái đơn hàng
+func (r *DonHangRepo) UpdateStatus(maDonHang int, trangThai string) error {
+	// Kiểm tra đơn hàng có tồn tại không
+	exists, err := r.ExistsDonHang(maDonHang)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return errors.New("đơn hàng không tồn tại")
+	}
+
+	// Lấy trạng thái hiện tại
+	currentStatus, err := r.GetCurrentStatus(maDonHang)
+	if err != nil {
+		return err
+	}
+
+	// Kiểm tra logic chuyển trạng thái
+	if !r.CanUpdateStatus(currentStatus, trangThai) {
+		return errors.New("không thể chuyển từ trạng thái '" + currentStatus + "' sang '" + trangThai + "'")
+	}
+
+	// Cập nhật trạng thái
+	return r.db.Model(&models.DonHang{}).
+		Where("ma_don_hang = ?", maDonHang).
+		Update("trang_thai", trangThai).Error
+}
+
+// UpdateDonHang - Cập nhật thông tin đơn hàng
+func (r *DonHangRepo) UpdateDonHang(donHang *models.DonHang) error {
+	return r.db.Save(donHang).Error
+}
+
+// DeleteDonHang - Xóa đơn hàng (soft delete hoặc hard delete tùy cấu hình)
+func (r *DonHangRepo) DeleteDonHang(maDonHang int) error {
+	return r.db.Delete(&models.DonHang{}, maDonHang).Error
+}
+
+// SearchDonHang - Tìm kiếm đơn hàng theo nhiều tiêu chí
+func (r *DonHangRepo) SearchDonHang(keyword string, trangThai string, fromDate, toDate time.Time) ([]models.DonHang, error) {
+	var donHangs []models.DonHang
+	query := r.db.Model(&models.DonHang{}).Preload("ChiTietDonHangs")
+
+	// Tìm theo mã đơn hàng hoặc mã người dùng
+	if keyword != "" {
+		query = query.Where("ma_don_hang = ? OR ma_nguoi_dung = ?", keyword, keyword)
+	}
+
+	// Lọc theo trạng thái
+	if trangThai != "" {
+		query = query.Where("trang_thai = ?", trangThai)
+	}
+
+	// Lọc theo khoảng thời gian
+	if !fromDate.IsZero() {
+		query = query.Where("ngay_tao >= ?", fromDate)
+	}
+	if !toDate.IsZero() {
+		query = query.Where("ngay_tao <= ?", toDate)
+	}
+
+	err := query.Order("ngay_tao DESC").Find(&donHangs).Error
+	return donHangs, err
+}
+
+// GetByNguoiDung - Lấy đơn hàng theo người dùng
+func (r *DonHangRepo) GetByNguoiDung(maNguoiDung int) ([]models.DonHang, error) {
+	var donHangs []models.DonHang
+	err := r.db.
+		Preload("ChiTietDonHangs").
+		Where("ma_nguoi_dung = ?", maNguoiDung).
+		Order("ngay_tao DESC").
+		Find(&donHangs).Error
+	return donHangs, err
+}
+
+// GetByStatus - Lấy đơn hàng theo trạng thái
+func (r *DonHangRepo) GetByStatus(trangThai string) ([]models.DonHang, error) {
+	var donHangs []models.DonHang
+	err := r.db.
+		Preload("ChiTietDonHangs").
+		Where("trang_thai = ?", trangThai).
+		Order("ngay_tao DESC").
+		Find(&donHangs).Error
+	return donHangs, err
+}
+
+// ExistsDonHang - Kiểm tra đơn hàng có tồn tại không
+func (r *DonHangRepo) ExistsDonHang(maDonHang int) (bool, error) {
+	var count int64
+	err := r.db.Model(&models.DonHang{}).
+		Where("ma_don_hang = ?", maDonHang).
+		Count(&count).Error
+	return count > 0, err
+}
+
+// GetCurrentStatus - Lấy trạng thái hiện tại của đơn hàng
+func (r *DonHangRepo) GetCurrentStatus(maDonHang int) (string, error) {
+	var donHang models.DonHang
+	err := r.db.Select("trang_thai").
+		Where("ma_don_hang = ?", maDonHang).
+		First(&donHang).Error
+	if err != nil {
+		return "", err
+	}
+	return donHang.TrangThai, nil
+}
+
+// CanUpdateStatus - Kiểm tra logic chuyển trạng thái hợp lệ
+func (r *DonHangRepo) CanUpdateStatus(currentStatus, newStatus string) bool {
+	// Định nghĩa flow trạng thái hợp lệ
+	validTransitions := map[string][]string{
+		"Chờ xác nhận":       {"Đang giao hàng", "Đã hủy"},
+		"Đang giao hàng":     {"Đã giao hàng", "Giao hàng thất bại"},
+		"Giao hàng thất bại": {"Đang giao hàng", "Đã hủy"},
+		"Đã giao hàng":       {"Hoàn thành"},
+		"Đã hủy":             {}, // Không thể chuyển sang trạng thái khác
+		"Hoàn thành":         {}, // Không thể chuyển sang trạng thái khác
+	}
+
+	allowedStatuses, exists := validTransitions[currentStatus]
+	if !exists {
+		return false
+	}
+
+	for _, status := range allowedStatuses {
+		if status == newStatus {
+			return true
+		}
+	}
+	return false
 }

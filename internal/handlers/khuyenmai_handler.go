@@ -18,20 +18,20 @@ func NewKhuyenMaiHandler(service services.KhuyenMaiService) *KhuyenMaiHandler {
 	return &KhuyenMaiHandler{service: service}
 }
 
-func (h *KhuyenMaiHandler) TaoKhuyenMai(c *gin.Context) {
+func (h *KhuyenMaiHandler) CreateKhuyenMai(c *gin.Context) {
 	khuyenMai := models.KhuyenMai{}
 	if err := c.ShouldBindJSON(&khuyenMai); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err := h.service.TaoKhuyenMai(&khuyenMai); err != nil {
+	if err := h.service.CreateKhuyenMai(&khuyenMai); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusCreated, khuyenMai)
 }
 
-func (h *KhuyenMaiHandler) SuaKhuyenMai(c *gin.Context) {
+func (h *KhuyenMaiHandler) UpdateKhuyenMai(c *gin.Context) {
 	// Lấy id từ URL
 	idParam := c.Param("id")
 	makhuyenmai, err := strconv.Atoi(idParam)
@@ -48,7 +48,7 @@ func (h *KhuyenMaiHandler) SuaKhuyenMai(c *gin.Context) {
 	}
 
 	// Gọi service
-	if err := h.service.SuaKhuyenMai(makhuyenmai, khuyenMai); err != nil {
+	if err := h.service.UpdateKhuyenMai(makhuyenmai, khuyenMai); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -60,7 +60,7 @@ func (h *KhuyenMaiHandler) SuaKhuyenMai(c *gin.Context) {
 	})
 }
 
-func (h *KhuyenMaiHandler) XoaKhuyenMai(c *gin.Context) {
+func (h *KhuyenMaiHandler) DeleteKhuyenMai(c *gin.Context) {
 	idParam := c.Param("id")
 	makhuyenmai, err := strconv.Atoi(idParam)
 	if err != nil {
@@ -68,7 +68,7 @@ func (h *KhuyenMaiHandler) XoaKhuyenMai(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.XoaKhuyenMai(makhuyenmai); err != nil {
+	if err := h.service.DeleteKhuyenMai(makhuyenmai); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -102,5 +102,15 @@ func (h *KhuyenMaiHandler) GetAll(c *gin.Context) {
 		return
 	}
 
+	c.JSON(http.StatusOK, khuyenMais)
+}
+
+func (h *KhuyenMaiHandler) SearchKhuyenMai(c *gin.Context) {
+	keyword := c.Query("keyword")
+	khuyenMais, err := h.service.SearchKhuyenMai(keyword)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	c.JSON(http.StatusOK, khuyenMais)
 }

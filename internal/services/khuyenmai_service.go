@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/tongthanhdat009/CCNLTHD/internal/models"
 	"github.com/tongthanhdat009/CCNLTHD/internal/repositories"
@@ -9,11 +10,12 @@ import (
 )
 
 type KhuyenMaiService interface {
-	TaoKhuyenMai(khuyenMai *models.KhuyenMai) error
-	SuaKhuyenMai(makhuyenmai int, khuyenMai models.KhuyenMai) error
-	XoaKhuyenMai(makhuyenmai int) error
+	CreateKhuyenMai(khuyenMai *models.KhuyenMai) error
+	UpdateKhuyenMai(makhuyenmai int, khuyenMai models.KhuyenMai) error
+	DeleteKhuyenMai(makhuyenmai int) error
 	GetAll() ([]models.KhuyenMai, error)
 	GetByID(makhuyenmai int) (models.KhuyenMai, error)
+	SearchKhuyenMai(keyword string) ([]models.KhuyenMai, error)
 }
 
 type khuyenMaiService struct {
@@ -24,18 +26,31 @@ func NewKhuyenMaiService(repo repositories.KhuyenMaiRepository) KhuyenMaiService
 	return &khuyenMaiService{repo: repo}
 }
 
-func (s *khuyenMaiService) TaoKhuyenMai(khuyenMai *models.KhuyenMai) error {
-	exists, err := s.repo.KiemTraTenTonTai(khuyenMai.TenKhuyenMai)
+func (s *khuyenMaiService) CreateKhuyenMai(khuyenMai *models.KhuyenMai) error {
+	// Validate tên khuyến mãi
+	if strings.TrimSpace(khuyenMai.TenKhuyenMai) == "" {
+		return errors.New("tên khuyến mãi không được để trống")
+	}
+
+	// Validate giá trị khuyến mãi
+	if khuyenMai.GiaTri < 0 {
+		return errors.New("giá trị khuyến mãi phải lớn hơn hoặc bằng 0")
+	}
+
+	// Kiểm tra trùng tên
+	exists, err := s.repo.ExistsTenKhuyenMai(khuyenMai.TenKhuyenMai)
 	if err != nil {
 		return err
 	}
 	if exists {
 		return errors.New("tên khuyến mãi đã tồn tại")
 	}
-	return s.repo.TaoKhuyenMai(khuyenMai)
+
+	return s.repo.CreateKhuyenMai(khuyenMai)
 }
 
-func (s *khuyenMaiService) SuaKhuyenMai(makhuyenmai int, khuyenMai models.KhuyenMai) error {
+func (s *khuyenMaiService) UpdateKhuyenMai(makhuyenmai int, khuyenMai models.KhuyenMai) error {
+	// Kiểm tra khuyến mãi có tồn tại không
 	currentKhuyenMai, err := s.repo.GetByID(makhuyenmai)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return errors.New("không tìm thấy khuyến mãi")
@@ -44,31 +59,63 @@ func (s *khuyenMaiService) SuaKhuyenMai(makhuyenmai int, khuyenMai models.Khuyen
 		return err
 	}
 
-	// Nếu tên thay đổi → kiểm tra trùng
-	if khuyenMai.TenKhuyenMai != "" && currentKhuyenMai.TenKhuyenMai != khuyenMai.TenKhuyenMai {
-		exists, err := s.repo.KiemTraTenTonTai(khuyenMai.TenKhuyenMai)
-		if err != nil {
-			return err
+	// Validate tên khuyến mãi mới (nếu có)
+	if khuyenMai.TenKhuyenMai != "" {
+		if strings.TrimSpace(khuyenMai.TenKhuyenMai) == "" {
+			return errors.New("tên khuyến mãi không được để trống")
 		}
-		if exists {
-			return errors.New("tên khuyến mãi đã tồn tại")
+
+		// Nếu tên thay đổi → kiểm tra trùng
+		if currentKhuyenMai.TenKhuyenMai != khuyenMai.TenKhuyenMai {
+			exists, err := s.repo.ExistsTenKhuyenMai(khuyenMai.TenKhuyenMai)
+			if err != nil {
+				return err
+			}
+			if exists {
+				return errors.New("tên khuyến mãi đã tồn tại")
+			}
 		}
 	}
 
-	return s.repo.SuaKhuyenMai(makhuyenmai, khuyenMai)
+	// Validate giá trị khuyến mãi mới (nếu có)
+	if khuyenMai.GiaTri != 0 { // Giả sử 0 nghĩa là không cập nhật
+		if khuyenMai.GiaTri < 0 {
+			return errors.New("giá trị khuyến mãi phải lớn hơn hoặc bằng 0")
+		}
+	}
+
+	return s.repo.UpdateKhuyenMai(makhuyenmai, khuyenMai)
 }
 
-// Xóa khuyến mãi
-func (s *khuyenMaiService) XoaKhuyenMai(makhuyenmai int) error {
-	return s.repo.XoaKhuyenMai(makhuyenmai)
+func (s *khuyenMaiService) DeleteKhuyenMai(makhuyenmai int) error {
+	// Kiểm tra khuyến mãi có tồn tại không
+	_, err := s.repo.GetByID(makhuyenmai)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return errors.New("không tìm thấy khuyến mãi")
+	}
+	if err != nil {
+		return err
+	}
+
+	return s.repo.DeleteKhuyenMai(makhuyenmai)
 }
 
-// Lấy tất cả khuyến mãi
 func (s *khuyenMaiService) GetAll() ([]models.KhuyenMai, error) {
 	return s.repo.GetAll()
 }
 
-// Lấy khuyến mãi theo ID
 func (s *khuyenMaiService) GetByID(makhuyenmai int) (models.KhuyenMai, error) {
-	return s.repo.GetByID(makhuyenmai)
+	khuyenMai, err := s.repo.GetByID(makhuyenmai)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return models.KhuyenMai{}, errors.New("không tìm thấy khuyến mãi")
+	}
+	return khuyenMai, err
+}
+
+func (s *khuyenMaiService) SearchKhuyenMai(keyword string) ([]models.KhuyenMai, error) {
+	// ✅ Validate keyword
+	if strings.TrimSpace(keyword) == "" {
+		return []models.KhuyenMai{}, nil // Trả về rỗng nếu không có từ khóa
+	}
+	return s.repo.SearchKhuyenMai(keyword)
 }

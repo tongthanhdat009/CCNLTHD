@@ -8,18 +8,18 @@ import (
 
 // SetupRoutes định nghĩa tất cả các route cho ứng dụng.
 func SetupRoutes(r *gin.Engine,
-	 hangHoaHandler *handlers.HangHoaHandler,
-	  donHangHandler *handlers.DonHangHandler,
-	   nguoiDungHandler *handlers.NguoiDungHandler,
-	    hangHandler *handlers.HangHandler,
-		 nhaCungCap *handlers.NhaCungCapHandler,
-		  dangKyHandler *handlers.DangKyHandler,
-		   dangNhapHandler *handlers.DangNhapHandler,
-		    permissionMiddleware *middleware.PermissionMiddleware,
-			 gioHangHandler *handlers.GioHangHandler,
-			  khuyenMaiHandler *handlers.KhuyenMaiHandler,
-			  traCuuAdminHandler *handlers.TraCuuAdminHandler,
-			  timKiemSanPhamHandler *handlers.TimKiemSanPhamHandler) {
+	hangHoaHandler *handlers.HangHoaHandler,
+	donHangHandler *handlers.DonHangHandler,
+	nguoiDungHandler *handlers.NguoiDungHandler,
+	hangHandler *handlers.HangHandler,
+	nhaCungCap *handlers.NhaCungCapHandler,
+	dangKyHandler *handlers.DangKyHandler,
+	dangNhapHandler *handlers.DangNhapHandler,
+	permissionMiddleware *middleware.PermissionMiddleware,
+	gioHangHandler *handlers.GioHangHandler,
+	khuyenMaiHandler *handlers.KhuyenMaiHandler,
+	traCuuAdminHandler *handlers.TraCuuAdminHandler,
+	timKiemSanPhamHandler *handlers.TimKiemSanPhamHandler) {
 	// Các route không cần xác thực
 
 	r.POST("/api/dangky", dangKyHandler.CreateNguoiDung)
@@ -34,25 +34,54 @@ func SetupRoutes(r *gin.Engine,
 			hangHoaRoutes.POST("", permissionMiddleware.Require("Quản lý hàng hóa", "Xử lý"), hangHoaHandler.CreateHangHoa)
 			hangHoaRoutes.POST("/update/:id", permissionMiddleware.Require("Quản lý hàng hóa", "Xử lý"), hangHoaHandler.UpdateHangHoa)
 			hangHoaRoutes.GET("/search", permissionMiddleware.Require("Quản lý hàng hóa", "Xem"), hangHoaHandler.SearchHangHoa)
-			
+
 		}
 
 		// Routes cho Đơn Hàng
 		donHangRoutes := api.Group("/donhang")
 		{
-			donHangRoutes.GET("", donHangHandler.GetAllDonHang)
-			// Thêm các route khác cho đơn hàng ở đây
+			// Lấy danh sách và tìm kiếm
+			donHangRoutes.GET("", permissionMiddleware.Require("Quản lý đơn hàng", "Xem"), donHangHandler.GetAllDonHang)
+			donHangRoutes.GET("/search", permissionMiddleware.Require("Quản lý đơn hàng", "Xem"), donHangHandler.SearchDonHang)
+
+			// Lấy đơn hàng theo người dùng (user có thể xem đơn hàng của mình)
+			donHangRoutes.GET("/nguoidung/:id", permissionMiddleware.RequireUserIDMatch(), donHangHandler.GetDonHangByNguoiDung)
+
+			// Lấy đơn hàng theo trạng thái
+			donHangRoutes.GET("/status/:status", permissionMiddleware.Require("Quản lý đơn hàng", "Xem"), donHangHandler.GetDonHangByStatus)
+
+			// Lấy chi tiết đơn hàng
+			donHangRoutes.GET("/:id", permissionMiddleware.Require("Quản lý đơn hàng", "Xem"), donHangHandler.GetDonHangByID)
+			donHangRoutes.GET("/:id/detail", permissionMiddleware.Require("Quản lý đơn hàng", "Xem"), donHangHandler.GetDetailByID)
+
+			// Tạo đơn hàng (user có thể tạo đơn hàng cho chính mình)
+			donHangRoutes.POST("", donHangHandler.CreateDonHang)
+
+			// Cập nhật đơn hàng (chỉ admin hoặc user sở hữu đơn hàng)
+			donHangRoutes.PUT("/:id", permissionMiddleware.Require("Quản lý đơn hàng", "Sửa"), donHangHandler.UpdateDonHang)
+
+			// Xóa đơn hàng (chỉ admin)
+			donHangRoutes.DELETE("/:id", permissionMiddleware.Require("Quản lý đơn hàng", "Xóa"), donHangHandler.DeleteDonHang)
+
+			// Duyệt đơn hàng (chỉ admin)
+			donHangRoutes.POST("/:id/approve", permissionMiddleware.Require("Quản lý đơn hàng", "Xử lý"), donHangHandler.ApproveOrder)
+
+			// Cập nhật trạng thái đơn hàng (chỉ admin)
+			donHangRoutes.PATCH("/:id/status", permissionMiddleware.Require("Quản lý đơn hàng", "Xử lý"), donHangHandler.UpdateOrderStatus)
+
+			// Hủy đơn hàng (admin hoặc user sở hữu đơn hàng)
+			donHangRoutes.POST("/:id/cancel", donHangHandler.CancelOrder)
 		}
 
-        // Routes cho Người Dùng
-        nguoiDungRoutes := api.Group("/nguoidung")
-        {
-            nguoiDungRoutes.GET("", permissionMiddleware.Require("Quản lý người dùng", "Xem"), nguoiDungHandler.GetAllNguoiDung)
-            nguoiDungRoutes.PUT("/:id", permissionMiddleware.RequireUserIDMatch(), nguoiDungHandler.UpdateNguoiDung)
-            nguoiDungRoutes.GET("/admin/:id",permissionMiddleware.Require("Quản lý người dùng", "Xem"), nguoiDungHandler.GetNguoiDungByID)
-            nguoiDungRoutes.GET("/:id",permissionMiddleware.RequireUserIDMatch(), nguoiDungHandler.GetNguoiDungByID)
-            nguoiDungRoutes.PUT("/admin/:id",permissionMiddleware.Require("Quản lý người dùng", "Sửa"), nguoiDungHandler.UpdateNguoiDungAdmin)
-        }
+		// Routes cho Người Dùng
+		nguoiDungRoutes := api.Group("/nguoidung")
+		{
+			nguoiDungRoutes.GET("", permissionMiddleware.Require("Quản lý người dùng", "Xem"), nguoiDungHandler.GetAllNguoiDung)
+			nguoiDungRoutes.PUT("/:id", permissionMiddleware.RequireUserIDMatch(), nguoiDungHandler.UpdateNguoiDung)
+			nguoiDungRoutes.GET("/admin/:id", permissionMiddleware.Require("Quản lý người dùng", "Xem"), nguoiDungHandler.GetNguoiDungByID)
+			nguoiDungRoutes.GET("/:id", permissionMiddleware.RequireUserIDMatch(), nguoiDungHandler.GetNguoiDungByID)
+			nguoiDungRoutes.PUT("/admin/:id", permissionMiddleware.Require("Quản lý người dùng", "Sửa"), nguoiDungHandler.UpdateNguoiDungAdmin)
+		}
 
 		// Routes cho Giỏ Hàng
 		gioHangRoutes := api.Group("/giohang")
@@ -67,10 +96,11 @@ func SetupRoutes(r *gin.Engine,
 		khuyenMaiRoutes := api.Group("/khuyenmai")
 		{
 			khuyenMaiRoutes.GET("", khuyenMaiHandler.GetAll)
-			khuyenMaiRoutes.POST("", khuyenMaiHandler.TaoKhuyenMai)
-			khuyenMaiRoutes.PUT("", khuyenMaiHandler.SuaKhuyenMai)
-			khuyenMaiRoutes.DELETE("/:id", khuyenMaiHandler.XoaKhuyenMai)
+			khuyenMaiRoutes.POST("", khuyenMaiHandler.CreateKhuyenMai)
+			khuyenMaiRoutes.PUT("", khuyenMaiHandler.UpdateKhuyenMai)
+			khuyenMaiRoutes.DELETE("/:id", khuyenMaiHandler.DeleteKhuyenMai)
 			khuyenMaiRoutes.GET("/:id", khuyenMaiHandler.GetByID)
+			khuyenMaiRoutes.GET("/search", khuyenMaiHandler.SearchKhuyenMai)
 		}
 
 		// Routes cho Hãng
@@ -94,13 +124,13 @@ func SetupRoutes(r *gin.Engine,
 			nhaCungCapRoutes.GET("/:id", permissionMiddleware.Require("Quản lý nhà cung cấp", "Xem"), nhaCungCap.GetNhaCungCapByID)
 			nhaCungCapRoutes.GET("/search/:tenncc", permissionMiddleware.Require("Quản lý nhà cung cấp", "Xem"), nhaCungCap.GetNhaCungCapByName)
 		}
-		
+
 		// Routes cho Tra cứu admin
-        traCuuAdminRoutes := api.Group("/tracuuadmin")
-        {
-            traCuuAdminRoutes.GET("/:seri", permissionMiddleware.Require("Tra cứu sản phẩm", "Xem"), traCuuAdminHandler.GetSanPhamBySeries)
-            traCuuAdminRoutes.GET("/trangthai", permissionMiddleware.Require("Tra cứu sản phẩm", "Xem"), traCuuAdminHandler.GetSanPhamByTrangThai)
-        }    
+		traCuuAdminRoutes := api.Group("/tracuuadmin")
+		{
+			traCuuAdminRoutes.GET("/:seri", permissionMiddleware.Require("Tra cứu sản phẩm", "Xem"), traCuuAdminHandler.GetSanPhamBySeries)
+			traCuuAdminRoutes.GET("/trangthai", permissionMiddleware.Require("Tra cứu sản phẩm", "Xem"), traCuuAdminHandler.GetSanPhamByTrangThai)
+		}
 
 		// Routes cho Tìm kiếm sản phẩm
 		timKiemSanPhamRoutes := api.Group("/timkiemsanpham")
