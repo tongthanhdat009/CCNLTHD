@@ -19,7 +19,9 @@ func SetupRoutes(r *gin.Engine,
 	gioHangHandler *handlers.GioHangHandler,
 	khuyenMaiHandler *handlers.KhuyenMaiHandler,
 	traCuuAdminHandler *handlers.TraCuuAdminHandler,
-	timKiemSanPhamHandler *handlers.TimKiemSanPhamHandler) {
+	timKiemSanPhamHandler *handlers.TimKiemSanPhamHandler,
+	bienTheHandler *handlers.QuanLyBienTheHandler,
+	phieuNhapHandler *handlers.QuanLyPhieuNhapHandler) {
 	// Các route không cần xác thực
 
 	r.POST("/api/dangky", dangKyHandler.CreateNguoiDung)
@@ -137,5 +139,37 @@ func SetupRoutes(r *gin.Engine,
 		{
 			timKiemSanPhamRoutes.GET("", timKiemSanPhamHandler.TimSanPham)
 		}
+
+		// Routes cho quản lý biến thể
+		bienTheRoutes := api.Group("/bienthe")
+		{
+			bienTheRoutes.GET("/:maBienThe", bienTheHandler.GetBienTheTheoMa)
+			bienTheRoutes.GET("/hanghoa/:maHangHoa", bienTheHandler.GetBienTheTheoHangHoa)
+			bienTheRoutes.POST("", bienTheHandler.CreateBienThe)
+			bienTheRoutes.PUT("", bienTheHandler.UpdateBienThe)
+			bienTheRoutes.DELETE("/delete/:maBienThe", bienTheHandler.DeleteBienThe)
+		}
+
+		//Routes cho Quản lý phiếu nhập
+		quanLyPhieuNhapRoutes := api.Group("/phieunhap")
+		{
+			quanLyPhieuNhapRoutes.GET("", permissionMiddleware.Require("Quản lý phiếu nhập", "Xem"), phieuNhapHandler.GetAllPhieuNhaps)
+			quanLyPhieuNhapRoutes.POST("", permissionMiddleware.Require("Quản lý phiếu nhập", "Thêm"), phieuNhapHandler.CreatePhieuNhap)
+			quanLyPhieuNhapRoutes.GET("/exists", permissionMiddleware.Require("Quản lý phiếu nhập", "Xem"), phieuNhapHandler.ExistsInPhieuNhap)
+			quanLyPhieuNhapRoutes.GET("/:id", permissionMiddleware.Require("Quản lý phiếu nhập", "Xem"), phieuNhapHandler.GetPhieuNhapByID)
+			quanLyPhieuNhapRoutes.DELETE("/:id", permissionMiddleware.Require("Quản lý phiếu nhập", "Xóa"), phieuNhapHandler.DeletePhieuNhap)
+			quanLyPhieuNhapRoutes.PUT("/:id", permissionMiddleware.Require("Quản lý phiếu nhập", "Sửa"), phieuNhapHandler.UpdatePhieuNhap)
+			quanLyPhieuNhapRoutes.GET("/search", permissionMiddleware.Require("Quản lý phiếu nhập", "Xem"), phieuNhapHandler.SearchPhieuNhaps)
+			// Chi tiết phiếu nhập
+			//xem (Done)
+			quanLyPhieuNhapRoutes.GET("/chitiet/:id", permissionMiddleware.Require("Quản lý phiếu nhập", "Xem"), phieuNhapHandler.GetChiTietPhieuNhap)
+			//thêm (Done)
+			quanLyPhieuNhapRoutes.POST("/chitiet/:id", permissionMiddleware.Require("Quản lý phiếu nhập", "Thêm"), phieuNhapHandler.CreateChiTietPhieuNhap)
+			quanLyPhieuNhapRoutes.PUT("/chitiet/:id/:maChiTietPhieuNhap/soluong", permissionMiddleware.Require("Quản lý phiếu nhập", "Sửa"), phieuNhapHandler.UpdateChiTietPhieuNhapSoLuong)
+			//xóa (Done)
+			quanLyPhieuNhapRoutes.DELETE("/chitiet/:id", permissionMiddleware.Require("Quản lý phiếu nhập", "Xóa"), phieuNhapHandler.DeleteAllChiTietPhieuNhap)
+			quanLyPhieuNhapRoutes.DELETE("/chitiet/:id/:maChiTietPhieuNhap", permissionMiddleware.Require("Quản lý phiếu nhập", "Xóa"), phieuNhapHandler.DeleteChiTietPhieuNhap)
+		}
+
 	}
 }

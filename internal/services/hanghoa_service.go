@@ -18,6 +18,7 @@ type HangHoaService interface {
         trangThai string,
         maKhuyenMai string,
     ) ([]models.HangHoa, error)
+    GetHangHoaByID(maHangHoa int) (*models.HangHoa, error)
 }
 
 type hangHoaService struct {
@@ -26,6 +27,10 @@ type hangHoaService struct {
 
 func NewHangHoaService(repo repositories.HangHoaRepository) HangHoaService {
     return &hangHoaService{repo: repo}
+}
+
+func (s *hangHoaService) GetHangHoaByID(maHangHoa int) (*models.HangHoa, error) {
+    return s.repo.GetHangHoaByID(maHangHoa)
 }
 
 func (s *hangHoaService) GetAllHangHoa() ([]models.HangHoa, error) {
@@ -37,8 +42,7 @@ func (s *hangHoaService) CreateHangHoa(hangHoa *models.HangHoa) error {
     if hangHoa.TenHangHoa == "" ||
         hangHoa.MaHang == 0 ||
         hangHoa.MaDanhMuc == 0 ||
-        hangHoa.Mau == "" ||
-        hangHoa.AnhDaiDien == "" {
+        hangHoa.Mau == ""{
         return errors.New("tên hàng hóa, mã hãng, mã danh mục, màu sắc và ảnh đại diện không được để trống")
     }
 
@@ -79,8 +83,7 @@ func (s *hangHoaService) UpdateHangHoa(hangHoa *models.HangHoa) error {
     if hangHoa.TenHangHoa == "" ||
         hangHoa.MaHang == 0 ||
         hangHoa.MaDanhMuc == 0 ||
-        hangHoa.Mau == "" ||
-        hangHoa.AnhDaiDien == "" {
+        hangHoa.Mau == "" {
         return errors.New("tên hàng hóa, mã hãng, mã danh mục, màu sắc và ảnh đại diện không được để trống")
     }
 

@@ -83,6 +83,18 @@ func main() {
 	timKiemSanPhamService := services.NewTimKiemSanPhamService(timKiemSanPhamRepo)
 	timKiemSanPhamHandler := handlers.NewTimKiemSanPhamHandler(timKiemSanPhamService)
 
+	//Quản lý biến thể
+	bienTheRepo := repositories.NewBienTheRepository(database)
+	bienTheService := services.NewBienTheService(bienTheRepo)
+	bienTheHandler := handlers.NewQuanLyBienTheHandler(bienTheService)
+
+	// Quản lý phiếu nhập
+	phieuNhapRepo := repositories.NewPhieuNhapRepository(database)
+	phieuNhapService := services.NewQuanLyPhieuNhapService(phieuNhapRepo)
+	phieuNhapHandler := handlers.NewQuanLyPhieuNhapHandler(phieuNhapService)
+
+
+
 	// --- Thiết lập server ---
 	r := gin.Default()
 	r.Static("/AnhHangHoa", "./static/AnhHangHoa")
@@ -99,7 +111,9 @@ func main() {
 		gioHangHandler,
 		khuyenMaiHandler,
         traCuuAdminHandler,
-		timKiemSanPhamHandler)
+		timKiemSanPhamHandler,
+		bienTheHandler,
+		phieuNhapHandler)
 
 	log.Println("Starting server on :8080")
 	if err := r.Run(":8080"); err != nil {
