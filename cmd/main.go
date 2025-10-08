@@ -79,9 +79,9 @@ func main() {
 	khuyenMaiHandler := handlers.NewKhuyenMaiHandler(khuyenMaiService)
 
 	//Tìm kiếm sản phẩm
-	timKiemSanPhamRepo := repositories.NewTimKiemSanPhamRepository(database)
-	timKiemSanPhamService := services.NewTimKiemSanPhamService(timKiemSanPhamRepo)
-	timKiemSanPhamHandler := handlers.NewTimKiemSanPhamHandler(timKiemSanPhamService)
+	timKiemHangHoaRepo := repositories.NewTimKiemHangHoaRepository(database)
+	timKiemHangHoaService := services.NewTimKiemHangHoaService(timKiemHangHoaRepo)
+	timKiemHangHoaHandler := handlers.NewTimKiemHangHoaHandler(timKiemHangHoaService)
 
 	//Quản lý biến thể
 	bienTheRepo := repositories.NewBienTheRepository(database)
@@ -111,7 +111,7 @@ func main() {
 		gioHangHandler,
 		khuyenMaiHandler,
         traCuuAdminHandler,
-		timKiemSanPhamHandler,
+		timKiemHangHoaHandler,
 		bienTheHandler,
 		phieuNhapHandler)
 

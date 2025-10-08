@@ -19,7 +19,7 @@ func SetupRoutes(r *gin.Engine,
 			gioHangHandler *handlers.GioHangHandler,
 			khuyenMaiHandler *handlers.KhuyenMaiHandler,
 			traCuuAdminHandler *handlers.TraCuuAdminHandler,
-			timKiemSanPhamHandler *handlers.TimKiemSanPhamHandler,
+			timKiemHangHoaHandler *handlers.TimKiemHangHoaHandler,
 			bienTheHandler *handlers.QuanLyBienTheHandler,
 			phieuNhapHandler *handlers.QuanLyPhieuNhapHandler) {
 	// Các route không cần xác thực
@@ -108,7 +108,7 @@ func SetupRoutes(r *gin.Engine,
 		// Routes cho Tìm kiếm sản phẩm
 		timKiemSanPhamRoutes := api.Group("/timkiemsanpham")
 		{
-			timKiemSanPhamRoutes.GET("", timKiemSanPhamHandler.TimSanPham)
+			timKiemSanPhamRoutes.GET("", timKiemHangHoaHandler.TimHangHoa)
 		}
 
 		// Routes cho quản lý biến thể
