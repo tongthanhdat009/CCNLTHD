@@ -55,7 +55,7 @@ func (s *hangService) CreateHang(hang *models.Hang) error {
     if hang.TenHang == "" {
         return errors.New("tên hãng không được để trống")
     }
-
+    
     // Kiểm tra trùng lặp
     existingHangs, err := s.repo.GetHangByName(hang.TenHang)
     if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
@@ -69,6 +69,24 @@ func (s *hangService) CreateHang(hang *models.Hang) error {
 }
 
 func (s *hangService) UpdateHang(hang *models.Hang) error {
+    // Kiểm tra xem hãng có hàng hóa liên quan không
+    existsHang, err := s.repo.GetHangByID(hang.MaHang)
+    if err != nil {
+        if errors.Is(err, gorm.ErrRecordNotFound) {
+            return errors.New("hãng không tồn tại")
+        }
+        return err
+    }
+
+    count, err := s.hangHoaRepo.CountByHangID(existsHang.MaHang)
+    if err != nil {
+        return err
+    }
+    if count > 0 {
+        return errors.New("không thể sửa hãng vì có hàng hóa đang sử dụng")
+    }
+
+
     if hang.TenHang == "" {
         return errors.New("tên hãng không được để trống")
     }
@@ -78,10 +96,10 @@ func (s *hangService) UpdateHang(hang *models.Hang) error {
     if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
         return err
     }
-    if len(existingHangs) > 0 && existingHangs[0].MaHang != hang.MaHang {
+    if len(existingHangs) > 1 && existingHangs[0].MaHang != hang.MaHang {
         return errors.New("tên hãng đã tồn tại")
     }
-
+    
     return s.repo.UpdateHang(hang)
 }
 
