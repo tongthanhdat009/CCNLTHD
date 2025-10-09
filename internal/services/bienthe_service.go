@@ -12,7 +12,8 @@ type QuanLyBienTheService interface {
     GetBienTheTheoMaHangHoa(maHangHoa int) ([]models.BienThe, error)
     GetBienTheTheoMa(maBienThe int) (*models.BienThe, error)
     CreateBienTheTheoMaHangHoa(bienThe *models.BienThe) error
-    UpdateBienThe(bienThe *models.BienThe) error
+    UpdateBienTheInfo(bienThe *models.BienThe) error
+    UpdateBienTheStatus(maBienThe int, trangThai string) error
     DeleteBienThe(maBienThe int) error
 }
 
@@ -91,8 +92,7 @@ func (s *BienTheSvc) CreateBienTheTheoMaHangHoa(bienThe *models.BienThe) error {
     return s.repo.CreateBienTheTheoMaHangHoa(bienThe)
 }
 
-func (s *BienTheSvc) UpdateBienThe(bienThe *models.BienThe) error {
-    // Kiểm tra Size phải là số lớn hơn 35
+func (s *BienTheSvc) UpdateBienTheInfo(bienThe *models.BienThe) error {
     // Kiểm tra MaHangHoa tồn tại
     exists, err := s.repo.ExistsHangHoa(bienThe.MaHangHoa)
     if err != nil {
@@ -100,10 +100,6 @@ func (s *BienTheSvc) UpdateBienThe(bienThe *models.BienThe) error {
     }
     if !exists {
         return errors.New("mã hàng hóa không tồn tại")
-    }
-
-    if bienThe.TrangThai != "DangBan" && bienThe.TrangThai != "NgungBan" {
-        return errors.New("trạng thái không hợp lệ")
     }
 
     sizeFloat, err := strconv.ParseFloat(bienThe.Size, 64)
@@ -119,6 +115,18 @@ func (s *BienTheSvc) UpdateBienThe(bienThe *models.BienThe) error {
         return errors.New("giá không được nhỏ hơn 0")
     }
 
+    return s.repo.UpdateBienTheInfo(bienThe)
+}
 
-    return s.repo.UpdateBienThe(bienThe)
+func (s *BienTheSvc) UpdateBienTheStatus(maBienThe int, trangThai string) error {
+    if trangThai != "DangBan" && trangThai != "NgungBan" {
+        return errors.New("trạng thái không hợp lệ")
+    }
+
+    _, err := s.repo.GetBienTheTheoMa(maBienThe)
+    if err != nil {
+        return errors.New("biến thể không tồn tại")
+    }
+
+    return s.repo.UpdateBienTheStatus(maBienThe, trangThai)
 }

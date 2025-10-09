@@ -9,7 +9,8 @@ type BienTheRepository interface {
     GetBienTheTheoMaHangHoa(maHangHoa int) ([]models.BienThe, error)
     GetBienTheTheoMa(maBienThe int) (*models.BienThe, error)
     CreateBienTheTheoMaHangHoa(bienThe *models.BienThe) error
-    UpdateBienThe(bienThe *models.BienThe) error
+    UpdateBienTheInfo(bienThe *models.BienThe) error
+    UpdateBienTheStatus(maBienThe int, trangThai string) error
     DeleteBienThe(maBienThe int) error
     ExistsHangHoa(maHangHoa int) (bool, error)
     ExistsBienTheByHangHoaAndSize(maHangHoa int, size string) (bool, error)
@@ -60,8 +61,15 @@ func (r *BienTheRepo) CreateBienTheTheoMaHangHoa(bienThe *models.BienThe) error 
     return r.db.Create(bienThe).Error
 }
 
-func (r *BienTheRepo) UpdateBienThe(bienThe *models.BienThe) error {
-    return r.db.Save(bienThe).Error
+func (r *BienTheRepo) UpdateBienTheInfo(bienThe *models.BienThe) error {
+    return r.db.Model(&models.BienThe{}).Where("mabienthe = ?", bienThe.MaBienThe).Updates(map[string]interface{}{
+        "Size":    bienThe.Size,
+        "Gia":     bienThe.Gia,
+    }).Error
+}
+
+func (r *BienTheRepo) UpdateBienTheStatus(maBienThe int, trangThai string) error {
+    return r.db.Model(&models.BienThe{}).Where("mabienthe = ?", maBienThe).Update("TrangThai", trangThai).Error
 }
 
 func (r *BienTheRepo) DeleteBienThe(maBienThe int) error {

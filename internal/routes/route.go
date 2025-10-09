@@ -117,7 +117,8 @@ func SetupRoutes(r *gin.Engine,
 			bienTheRoutes.GET("/:maBienThe", bienTheHandler.GetBienTheTheoMa)
 			bienTheRoutes.GET("/hanghoa/:maHangHoa", bienTheHandler.GetBienTheTheoHangHoa)
 			bienTheRoutes.POST("", bienTheHandler.CreateBienThe)
-			bienTheRoutes.PUT("", bienTheHandler.UpdateBienThe)
+			bienTheRoutes.PUT("/info/:maBienThe", bienTheHandler.UpdateBienTheInfo)
+			bienTheRoutes.PUT("/status/:maBienThe", bienTheHandler.UpdateBienTheStatus)
 			bienTheRoutes.DELETE("/delete/:maBienThe", bienTheHandler.DeleteBienThe)
 		}
 
