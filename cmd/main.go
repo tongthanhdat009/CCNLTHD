@@ -79,9 +79,9 @@ func main() {
 	khuyenMaiHandler := handlers.NewKhuyenMaiHandler(khuyenMaiService)
 
 	//Tìm kiếm sản phẩm
-	timKiemSanPhamRepo := repositories.NewTimKiemSanPhamRepository(database)
-	timKiemSanPhamService := services.NewTimKiemSanPhamService(timKiemSanPhamRepo)
-	timKiemSanPhamHandler := handlers.NewTimKiemSanPhamHandler(timKiemSanPhamService)
+	timKiemHangHoaRepo := repositories.NewTimKiemHangHoaRepository(database)
+	timKiemHangHoaService := services.NewTimKiemHangHoaService(timKiemHangHoaRepo)
+	timKiemHangHoaHandler := handlers.NewTimKiemHangHoaHandler(timKiemHangHoaService)
 
 	//Quản lý biến thể
 	bienTheRepo := repositories.NewBienTheRepository(database)
@@ -93,6 +93,10 @@ func main() {
 	phieuNhapService := services.NewQuanLyPhieuNhapService(phieuNhapRepo)
 	phieuNhapHandler := handlers.NewQuanLyPhieuNhapHandler(phieuNhapService)
 
+	// Quản lý quyền
+	quyenRepo := repositories.NewQuyenRepository(database)
+	quyenService := services.NewQuyenService(quyenRepo)
+	quyenHandler := handlers.NewQuyenHandler(quyenService)
 
 
 	// --- Thiết lập server ---
@@ -111,9 +115,10 @@ func main() {
 		gioHangHandler,
 		khuyenMaiHandler,
         traCuuAdminHandler,
-		timKiemSanPhamHandler,
+		timKiemHangHoaHandler,
 		bienTheHandler,
-		phieuNhapHandler)
+		phieuNhapHandler,
+		quyenHandler)
 
 	log.Println("Starting server on :8080")
 	if err := r.Run(":8080"); err != nil {

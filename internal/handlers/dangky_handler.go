@@ -42,7 +42,7 @@ func (h *DangKyHandler) CreateNguoiDung(c *gin.Context) {
     }
 
     // Gọi service để tạo người dùng
-    if err := h.service.CreateNguoiDung(nguoiDung); err != nil {
+    if err := h.service.CreateNguoiDung(&nguoiDung); err != nil {
         c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
         return
     }

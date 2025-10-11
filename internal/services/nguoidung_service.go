@@ -1,13 +1,15 @@
 package services
 
 import (
-    "github.com/tongthanhdat009/CCNLTHD/internal/models"
-    "github.com/tongthanhdat009/CCNLTHD/internal/repositories"
-    "strings"
-    "errors"
-    "regexp"
-    "golang.org/x/crypto/bcrypt"
-    "database/sql"
+	"database/sql"
+	"errors"
+	"fmt"
+	"regexp"
+	"strings"
+
+	"github.com/tongthanhdat009/CCNLTHD/internal/models"
+	"github.com/tongthanhdat009/CCNLTHD/internal/repositories"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type NguoiDungService interface {
@@ -16,7 +18,7 @@ type NguoiDungService interface {
     UpdateNguoiDung(maNguoiDung int, nguoiDung models.NguoiDung) error
     UpdateNguoiDungAdmin(maNguoiDung int, nguoiDung models.NguoiDung) error
     ValidateNguoiDung(nguoiDung models.NguoiDung) error
-    CreateNguoiDung(nguoiDung models.NguoiDung) error
+    CreateNguoiDung(nguoiDung *models.NguoiDung) error
 }
 
 type nguoiDungService struct {
@@ -128,10 +130,23 @@ func (s *nguoiDungService) UpdateNguoiDungAdmin(maNguoiDung int, nd models.Nguoi
 }
 
 
-func (s *nguoiDungService) CreateNguoiDung(nguoiDung models.NguoiDung) error {
+func (s *nguoiDungService) CreateNguoiDung(nguoiDung *models.NguoiDung) error {
     // Kiểm tra trường bắt buộc
-    if err := s.ValidateNguoiDung(nguoiDung); err != nil {
+    if err := s.ValidateNguoiDung(*nguoiDung); err != nil {
         return err
+    }
+    if nguoiDung.MaQuyen == 0 {
+        // Gán quyền "Khách hàng" nếu không có quyền nào được chỉ định
+        maQuyen, err := s.repo.FindQuyenKhachHang()
+        if err != nil {
+            return errors.New("không tìm thấy quyền 'Khách hàng'")
+        }
+        nguoiDung.MaQuyen = maQuyen
+    }
+    if exists, err := s.repo.CheckNameExists(nguoiDung.TenDangNhap); err != nil {
+        return err
+    } else if exists {
+        return errors.New("tên đăng nhập đã tồn tại")
     }
     // Mã hóa mật khẩu
     hashedPassword, err := bcrypt.GenerateFromPassword([]byte(nguoiDung.MatKhau), bcrypt.DefaultCost)
@@ -144,6 +159,7 @@ func (s *nguoiDungService) CreateNguoiDung(nguoiDung models.NguoiDung) error {
 }
 
 func (s *nguoiDungService) ValidateNguoiDung(nd models.NguoiDung) error {
+    fmt.Print("Validating user: ", nd)
     // Kiểm tra trường bắt buộc
     if nd.TenDangNhap == "" {
         return errors.New("tên đăng nhập là bắt buộc")

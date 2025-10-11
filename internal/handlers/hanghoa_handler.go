@@ -103,7 +103,7 @@ func (h *HangHoaHandler) UpdateHangHoa(c *gin.Context) {
     }
 
     var hh models.HangHoa
-    if payload := c.PostForm("payload"); payload != "" {
+    if payload := c.Request.FormValue("payload"); payload != "" {
         if err := json.Unmarshal([]byte(payload), &hh); err != nil {
             c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid payload"})
             return

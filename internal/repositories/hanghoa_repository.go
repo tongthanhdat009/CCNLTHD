@@ -1,8 +1,8 @@
 package repositories
 
 import (
-    "github.com/tongthanhdat009/CCNLTHD/internal/models"
-    "gorm.io/gorm"
+	"github.com/tongthanhdat009/CCNLTHD/internal/models"
+	"gorm.io/gorm"
 )
 
 type HangHoaRepository interface {
@@ -91,45 +91,31 @@ func (r *hangHoaRepo) SearchHangHoa(
     maKhuyenMai string,
 ) ([]models.HangHoa, error) {
     var hangHoas []models.HangHoa
-
     query := r.db.Model(&models.HangHoa{}).
-        Preload("Hang").
-        Preload("DanhMuc").
-        Preload("KhuyenMai").
-        Preload("BienThes")
+        Joins("JOIN Hang ON HangHoa.MaHang = Hang.MaHang").
+        Joins("JOIN DanhMuc ON HangHoa.MaDanhMuc = DanhMuc.MaDanhMuc")
 
-    // Join với bảng liên quan nếu có điều kiện tìm kiếm
-    if tenDanhMuc != "" {
-        query = query.Joins("JOIN danhmuc ON hanghoa.MaDanhMuc = danhmuc.MaDanhMuc")
-    }
-    if tenHang != "" {
-        query = query.Joins("JOIN hang ON hanghoa.MaHang = hang.MaHang")
-    }
-    if maKhuyenMai != "" {
-        query = query.Joins("JOIN khuyenmai ON hanghoa.MaKhuyenMai = khuyenmai.MaKhuyenMai")
-    }
-
-    // Điều kiện tìm kiếm
     if tenHangHoa != "" {
-        query = query.Where("hanghoa.TenHangHoa LIKE ?", "%"+tenHangHoa+"%")
-    }
-    if tenDanhMuc != "" {
-        query = query.Where("danhmuc.TenDanhMuc LIKE ?", "%"+tenDanhMuc+"%")
+        query = query.Where("HangHoa.TenHangHoa LIKE CONCAT('%', ?, '%') COLLATE utf8mb4_unicode_ci", tenHangHoa)
     }
     if tenHang != "" {
-        query = query.Where("hang.TenHang LIKE ?", "%"+tenHang+"%")
+        query = query.Where("Hang.TenHang LIKE CONCAT('%', ?, '%') COLLATE utf8mb4_unicode_ci", tenHang)
+    }
+    if tenDanhMuc != "" {
+        query = query.Where("DanhMuc.TenDanhMuc LIKE CONCAT('%', ?, '%') COLLATE utf8mb4_unicode_ci", tenDanhMuc)
     }
     if mau != "" {
-        query = query.Where("hanghoa.Mau LIKE ?", "%"+mau+"%")
+        query = query.Where("HangHoa.Mau LIKE CONCAT('%', ?, '%') COLLATE utf8mb4_unicode_ci", mau)
     }
     if trangThai != "" {
-        query = query.Where("hanghoa.TrangThai = ?", trangThai)
+        query = query.Where("HangHoa.TrangThai = ?", trangThai)
     }
     if maKhuyenMai != "" {
-        query = query.Where("hanghoa.MaKhuyenMai = ?", maKhuyenMai)
+        query = query.Where("HangHoa.MaKhuyenMai = ?", maKhuyenMai)
     }
 
-    if err := query.Find(&hangHoas).Error; err != nil {
+    err := query.Preload("Hang").Preload("DanhMuc").Preload("BienThes").Find(&hangHoas).Error
+    if err != nil {
         return nil, err
     }
     return hangHoas, nil
