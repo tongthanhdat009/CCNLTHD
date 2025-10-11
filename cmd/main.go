@@ -67,17 +67,53 @@ func main() {
 	gioHangRepo := repositories.NewGioHangRepository(database)
 	gioHangService := services.NewGioHangService(gioHangRepo)
 	gioHangHandler := handlers.NewGioHangHandler(gioHangService)
+	
+	// Tra cứu admin
+    tracuuAdminRepo := repositories.NewTraCuuAdminRepository(database)
+    tracuuAdminService := services.NewTraCuuAdminRepository(tracuuAdminRepo)
+    traCuuAdminHandler := handlers.NewTraCuuAdminHandler(tracuuAdminService)
 
 	//Khuyến mãi
 	khuyenMaiRepo := repositories.NewKhuyenMaiRepository(database)
 	khuyenMaiService := services.NewKhuyenMaiService(khuyenMaiRepo)
 	khuyenMaiHandler := handlers.NewKhuyenMaiHandler(khuyenMaiService)
 
+	//Tìm kiếm sản phẩm
+	timKiemHangHoaRepo := repositories.NewTimKiemHangHoaRepository(database)
+	timKiemHangHoaService := services.NewTimKiemHangHoaService(timKiemHangHoaRepo)
+	timKiemHangHoaHandler := handlers.NewTimKiemHangHoaHandler(timKiemHangHoaService)
+
+	//Quản lý biến thể
+	bienTheRepo := repositories.NewBienTheRepository(database)
+	bienTheService := services.NewBienTheService(bienTheRepo)
+	bienTheHandler := handlers.NewQuanLyBienTheHandler(bienTheService)
+
+	// Quản lý phiếu nhập
+	phieuNhapRepo := repositories.NewPhieuNhapRepository(database)
+	phieuNhapService := services.NewQuanLyPhieuNhapService(phieuNhapRepo)
+	phieuNhapHandler := handlers.NewQuanLyPhieuNhapHandler(phieuNhapService)
+
+
+
 	// --- Thiết lập server ---
 	r := gin.Default()
-
+	r.Static("/AnhHangHoa", "./static/AnhHangHoa")
 	// Gọi hàm để thiết lập tất cả các routes
-	routes.SetupRoutes(r, hangHoaHandler, donHangHandler, nguoiDungHandler, hangHandler, nhaCungCapHandler, dangKyHandler, dangNhapHandler, permissionMiddleware, gioHangHandler, khuyenMaiHandler)
+	routes.SetupRoutes(r, 
+        hangHoaHandler, 
+        donHangHandler, 
+        nguoiDungHandler, 
+        hangHandler, 
+        nhaCungCapHandler, 
+        dangKyHandler, 
+        dangNhapHandler, 
+        permissionMiddleware, 
+		gioHangHandler,
+		khuyenMaiHandler,
+        traCuuAdminHandler,
+		timKiemHangHoaHandler,
+		bienTheHandler,
+		phieuNhapHandler)
 
 	log.Println("Starting server on :8080")
 	if err := r.Run(":8080"); err != nil {

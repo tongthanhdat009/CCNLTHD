@@ -5,12 +5,12 @@ import "database/sql"
 type HangHoa struct {
 	MaHangHoa   int           `gorm:"primaryKey;column:MaHangHoa" json:"ma_hang_hoa"`
 	TenHangHoa  string        `gorm:"column:TenHangHoa" json:"ten_hang_hoa"`
-	MaHang      int           `gorm:"column:MaHang" json:"-"`
-	MaDanhMuc   int           `gorm:"column:MaDanhMuc" json:"-"`
+	MaHang      int           `gorm:"column:MaHang" json:"ma_hang"`
+	MaDanhMuc   int           `gorm:"column:MaDanhMuc" json:"ma_danh_muc"`
 	Mau         string        `gorm:"column:Mau" json:"mau"`
 	MoTa        string        `gorm:"column:MoTa" json:"mo_ta"`
 	TrangThai   string        `gorm:"column:TrangThai" json:"trang_thai"`
-	MaKhuyenMai sql.NullInt64 `gorm:"column:MaKhuyenMai" json:"-"`
+	MaKhuyenMai sql.NullInt64 `gorm:"column:MaKhuyenMai" json:"ma_khuyen_mai,omitempty"`
 	AnhDaiDien  string        `gorm:"column:AnhDaiDien" json:"anh_dai_dien"`
 
 	// --- Định nghĩa các mối quan hệ ---
@@ -21,13 +21,14 @@ type HangHoa struct {
 }
 
 type BienThe struct {
-	MaBienThe  int     `gorm:"primaryKey;column:MaBienThe" json:"ma_bien_the"`
-	MaHangHoa  int     `gorm:"column:MaHangHoa" json:"ma_hang_hoa"`
-	Size       string  `gorm:"column:Size" json:"size"`
-	Gia        float64 `gorm:"column:Gia" json:"gia"`
-	SoLuongTon int     `gorm:"column:SoLuongTon" json:"so_luong_ton"`
-	TrangThai  string  `gorm:"column:TrangThai" json:"trang_thai"`
+    MaBienThe  int     `gorm:"primaryKey;column:MaBienThe" json:"ma_bien_the"`
+    MaHangHoa  int     `gorm:"column:MaHangHoa" json:"ma_hang_hoa"`
+    Size       string  `gorm:"column:Size" json:"size"`
+    Gia        float64 `gorm:"column:Gia" json:"gia"`
+    SoLuongTon int     `gorm:"column:SoLuongTon" json:"so_luong_ton"`
+    TrangThai  string  `gorm:"column:TrangThai" json:"trang_thai"`
 
+    HangHoa HangHoa `gorm:"foreignKey:MaHangHoa" json:"hang_hoa,omitempty"`
 }
 
 type DanhMuc struct {
