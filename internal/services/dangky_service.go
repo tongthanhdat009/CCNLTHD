@@ -10,7 +10,7 @@ import (
 )
 
 type DangKyService interface {
-    CreateNguoiDung(nguoiDung models.NguoiDung) error
+    CreateNguoiDung(nguoiDung *models.NguoiDung) error
 }
 type dangKyService struct {
     repo repositories.NguoiDungRepository
@@ -63,9 +63,9 @@ func validateDangKy(nguoiDung models.NguoiDung) error {
 }
 
 
-func (s *dangKyService) CreateNguoiDung(nguoiDung models.NguoiDung) error {
+func (s *dangKyService) CreateNguoiDung(nguoiDung *models.NguoiDung) error {
     // Validate dữ liệu
-    if err := validateDangKy(nguoiDung); err != nil {
+    if err := validateDangKy(*nguoiDung); err != nil {
         return err
     }
 

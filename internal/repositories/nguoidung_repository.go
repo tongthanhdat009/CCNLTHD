@@ -8,7 +8,7 @@ import (
 
 type NguoiDungRepository interface {
     GetAll() ([]models.NguoiDung, error)
-    Create(nguoiDung models.NguoiDung) error
+    Create(nguoiDung *models.NguoiDung) error
     Update(maNguoiDung int, nguoiDung models.NguoiDung) error
     CheckNameExists(name string) (bool, error)
     FindQuyenKhachHang() (int, error)
@@ -32,7 +32,7 @@ func (r *NguoiDungRepo) GetAll() ([]models.NguoiDung, error) {
     err := r.db.Preload("Quyen").Find(&NguoiDungs).Error
     return NguoiDungs, err
 }
-func (r *NguoiDungRepo) Create(nguoiDung models.NguoiDung) error {
+func (r *NguoiDungRepo) Create(nguoiDung *models.NguoiDung) error {
     return r.db.Create(&nguoiDung).Error
 }
 func (r *NguoiDungRepo) Update(maNguoiDung int, nguoiDung models.NguoiDung) error {

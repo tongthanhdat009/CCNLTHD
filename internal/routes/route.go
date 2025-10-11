@@ -36,6 +36,7 @@ func SetupRoutes(r *gin.Engine, hangHoaHandler *handlers.HangHoaHandler, donHang
             nguoiDungRoutes.GET("/admin/:id",permissionMiddleware.Require("Quản lý người dùng", "Xem"), nguoiDungHandler.GetNguoiDungByID)
             nguoiDungRoutes.GET("/:id",permissionMiddleware.RequireUserIDMatch(), nguoiDungHandler.GetNguoiDungByID)
             nguoiDungRoutes.PUT("/admin/:id",permissionMiddleware.Require("Quản lý người dùng", "Sửa"), nguoiDungHandler.UpdateNguoiDungAdmin)
+            nguoiDungRoutes.POST("", permissionMiddleware.Require("Quản lý người dùng", "Thêm"), nguoiDungHandler.CreateNguoiDung)
         }
 
 		// Routes cho Giỏ Hàng
