@@ -23,7 +23,6 @@ type ChiTietDonHang struct {
     MaChiTiet int     `gorm:"primaryKey;column:MaChiTiet" json:"ma_chi_tiet"`
     MaDonHang int     `gorm:"column:MaDonHang" json:"ma_don_hang"`
     MaSanPham int     `gorm:"column:MaSanPham" json:"ma_san_pham"`
-    SoLuong   int     `gorm:"column:SoLuong" json:"so_luong"`
     GiaBan    float64 `gorm:"column:GiaBan" json:"gia_ban"`
 
     // --- Mối quan hệ Many-to-One ---

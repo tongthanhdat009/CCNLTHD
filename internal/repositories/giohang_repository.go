@@ -17,6 +17,10 @@ type GioHangRepository interface {
 	SuaGioHang(giohang models.GioHang) error
 	XoaGioHang(giohang models.GioHang) error
 	GetAll(manguoidung int) ([]models.GioHang, error)
+	GetAllGia(manguoidung int) (float64, error)
+	GetByID(mabienthe int) ([]models.GioHang, error)
+	CreateDH(donHang models.DonHang) error
+	GetSanPham(mabienthe int, soluong int) ([]models.SanPham, error)
 }
 type GioHangRepo struct {
 	db *gorm.DB
@@ -86,41 +90,6 @@ func (r *GioHangRepo) XoaGioHang(giohang models.GioHang) error {
 	return nil
 }
 
-// func (r *GioHangRepo) GetAll(manguoidung int) ([]models.GioHang, error) {
-// 	var gioHangs []models.GioHang
-
-// 	err := r.db.Where("MaNguoiDung = ?", manguoidung).
-// 		Preload("BienThe").
-// 		Preload("BienThe.HangHoa").
-// 		Preload("BienThe.HangHoa.KhuyenMai").
-// 		Find(&gioHangs).Error
-
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	// Tính toán giá có áp dụng khuyến mãi
-// 	for i := range gioHangs {
-// 		if gioHangs[i].BienThe.MaBienThe != 0 {
-// 			// Lấy giá gốc từ BienThe
-// 			giaGoc := gioHangs[i].BienThe.Gia
-
-// 			// Kiểm tra có khuyến mãi không
-// 			if gioHangs[i].BienThe.HangHoa.MaKhuyenMai.Valid {
-// 				// Có khuyến mãi
-// 				giaTriKhuyenMai := gioHangs[i].BienThe.HangHoa.KhuyenMai.GiaTri
-// 				// Tính giá sau khuyến mãi: giá gốc - (giá gốc * % khuyến mãi / 100)
-// 				gioHangs[i].Gia = giaGoc * (100 - giaTriKhuyenMai) / 100
-// 			} else {
-// 				// Không có khuyến mãi, giữ nguyên giá gốc
-// 				gioHangs[i].Gia = giaGoc
-// 			}
-// 		}
-// 	}
-
-// 	return gioHangs, nil
-// }
-
 func (r *GioHangRepo) GetAll(manguoidung int) ([]models.GioHang, error) {
 	var results []struct {
 		MaNguoiDung int     `json:"ma_nguoi_dung"`
@@ -162,4 +131,57 @@ func (r *GioHangRepo) GetAll(manguoidung int) ([]models.GioHang, error) {
 	}
 
 	return gioHangs, nil
+}
+
+func (r *GioHangRepo) GetSanPham(mabienthe int, soluong int) ([]models.SanPham, error) {
+	var sanPham []models.SanPham
+	err := r.db.Table("san_pham").
+		Select("san_pham.*, chi_tiet_phieu_nhap.GiaNhap as gia_ban").
+		Joins("JOIN chi_tiet_phieu_nhap ON san_pham.MaChiTietPhieuNhap = chi_tiet_phieu_nhap.MaChiTiet").
+		Joins("JOIN bien_the ON chi_tiet_phieu_nhap.MaBienthe = bien_the.MaBienThe").
+		Where("bien_the.MaBienThe = ? AND san_pham.TrangThai = ?", mabienthe, "Chưa bán").
+		Limit(soluong).
+		First(&sanPham).Error
+
+	if err != nil {
+		return sanPham, err
+	}
+	if len(sanPham) < soluong {
+		return sanPham, errors.New("không đủ sản phẩm trong kho")
+	}
+	return sanPham, nil
+}
+
+func (r *GioHangRepo) GetAllGia(manguoidung int) (float64, error) {
+	var totalGia float64
+	err := r.db.Model(&models.GioHang{}).
+		Where("MaNguoiDung = ?", manguoidung).
+		Select("SUM(Gia * SoLuong)").
+		Scan(&totalGia).Error
+	if err != nil {
+		return 0, err
+	}
+	return totalGia, nil
+}
+
+func (r *GioHangRepo) GetByID(manguoidung int) ([]models.GioHang, error) {
+	var gioHang []models.GioHang
+	err := r.db.Where("MaNguoiDung = ?", manguoidung).Find(&gioHang).Error
+	if err != nil {
+		return nil, err
+	}
+	return gioHang, nil
+}
+
+func (r *GioHangRepo) CreateDH(donHang models.DonHang) error {
+	return r.db.Create(&donHang).Error
+}
+
+func (r *GioHangRepo) CreateChiTietDonHang(madonhang int, sanpham []models.SanPham) error {
+	for _, sp := range sanpham {
+		if err := r.db.Create(&models.ChiTietDonHang{MaDonHang: madonhang, MaSanPham: sp.MaSanPham, GiaBan: sp.GiaBan}).Error; err != nil {
+			return err
+		}
+	}
+	return nil
 }

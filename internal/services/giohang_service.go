@@ -12,6 +12,7 @@ type GioHangService interface {
 	SuaGioHang(giohang models.GioHang) error
 	XoaGioHang(giohang models.GioHang) error
 	GetAll(manguoidung int) ([]models.GioHang, error)
+	
 }
 
 type gioHangService struct {
@@ -78,3 +79,5 @@ func (s *gioHangService) XoaGioHang(giohang models.GioHang) error {
 func (s *gioHangService) GetAll(manguoidung int) ([]models.GioHang, error) {
 	return s.repo.GetAll(manguoidung)
 }
+
+

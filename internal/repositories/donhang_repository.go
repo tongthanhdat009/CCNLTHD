@@ -42,10 +42,12 @@ func NewDonHangRepository(db *gorm.DB) DonHangRepository {
 // CreateDonHang - Tạo đơn hàng mới
 func (r *DonHangRepo) CreateDonHang(donHang *models.DonHang) error {
 	// Thiết lập trạng thái mặc định nếu chưa có
-	if donHang.TrangThai == "" {
-		donHang.TrangThai = "Chờ xác nhận"
-	}
+
 	return r.db.Create(donHang).Error
+}
+
+func (r *DonHangRepo) CreateChiTietDonHang(donHang *models.DonHang) error {
+	return r.db.Create(&donHang.ChiTietDonHangs).Error
 }
 
 // GetByID - Lấy đơn hàng theo mã (không load chi tiết)
@@ -83,12 +85,12 @@ func (r *DonHangRepo) GetAll() ([]models.DonHang, error) {
 	var donHangs []models.DonHang
 	err := r.db.
 		Preload("ChiTietDonHangs").
-		Order("ngay_tao DESC").
+		Order("NgayTao DESC").
 		Find(&donHangs).Error
 	return donHangs, err
 }
 
-// UpdateStatus - Duyệt và thay đổi trạng thái đơn hàng
+// UpdateStatus - Duyệt và tha			y đổi trạng thái đơn hàng
 func (r *DonHangRepo) UpdateStatus(maDonHang int, trangThai string) error {
 	// Kiểm tra đơn hàng có tồn tại không
 	exists, err := r.ExistsDonHang(maDonHang)
@@ -159,7 +161,6 @@ func (r *DonHangRepo) GetByNguoiDung(maNguoiDung int) ([]models.DonHang, error) 
 	err := r.db.
 		Preload("ChiTietDonHangs").
 		Where("ma_nguoi_dung = ?", maNguoiDung).
-		Order("ngay_tao DESC").
 		Find(&donHangs).Error
 	return donHangs, err
 }
@@ -220,3 +221,4 @@ func (r *DonHangRepo) CanUpdateStatus(currentStatus, newStatus string) bool {
 	}
 	return false
 }
+
