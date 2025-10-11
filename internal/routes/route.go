@@ -21,7 +21,8 @@ func SetupRoutes(r *gin.Engine,
 			traCuuAdminHandler *handlers.TraCuuAdminHandler,
 			timKiemHangHoaHandler *handlers.TimKiemHangHoaHandler,
 			bienTheHandler *handlers.QuanLyBienTheHandler,
-			phieuNhapHandler *handlers.QuanLyPhieuNhapHandler) {
+			phieuNhapHandler *handlers.QuanLyPhieuNhapHandler,
+			quyenHandler *handlers.QuyenHandler) {
 	// Các route không cần xác thực
 
 	r.POST("/api/dangky", dangKyHandler.CreateNguoiDung)
@@ -143,6 +144,11 @@ func SetupRoutes(r *gin.Engine,
 			quanLyPhieuNhapRoutes.DELETE("/chitiet/:id", permissionMiddleware.Require("Quản lý phiếu nhập", "Xóa"), phieuNhapHandler.DeleteAllChiTietPhieuNhap)
 			quanLyPhieuNhapRoutes.DELETE("/chitiet/:id/:maChiTietPhieuNhap", permissionMiddleware.Require("Quản lý phiếu nhập", "Xóa"), phieuNhapHandler.DeleteChiTietPhieuNhap)
 		}
-
+		//Routes cho Quản lý quyền
+		quyenRoutes := api.Group("/quyen")
+		{
+			quyenRoutes.GET("", quyenHandler.GetAll)
+			quyenRoutes.GET("/:id", quyenHandler.GetByID)
+		}
 	}
 }

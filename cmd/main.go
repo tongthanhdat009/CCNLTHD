@@ -93,6 +93,10 @@ func main() {
 	phieuNhapService := services.NewQuanLyPhieuNhapService(phieuNhapRepo)
 	phieuNhapHandler := handlers.NewQuanLyPhieuNhapHandler(phieuNhapService)
 
+	// Quản lý quyền
+	quyenRepo := repositories.NewQuyenRepository(database)
+	quyenService := services.NewQuyenService(quyenRepo)
+	quyenHandler := handlers.NewQuyenHandler(quyenService)
 
 
 	// --- Thiết lập server ---
@@ -113,7 +117,8 @@ func main() {
         traCuuAdminHandler,
 		timKiemHangHoaHandler,
 		bienTheHandler,
-		phieuNhapHandler)
+		phieuNhapHandler,
+		quyenHandler)
 
 	log.Println("Starting server on :8080")
 	if err := r.Run(":8080"); err != nil {
