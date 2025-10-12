@@ -86,6 +86,26 @@ func (h *GioHangHandler) GetAll(c *gin.Context) {
 		"message": "Lấy danh sách giỏ hàng thành công",
 		"data":    giohangs,
 	})
-
-	
+}
+func (h *GioHangHandler) ThanhToan(c *gin.Context) {
+	var req struct {
+		GioHang    []models.GioHang `json:"giohang"`
+		MaNguoiDung int             `json:"ma_nguoi_dung"`
+		TinhThanh           string    `json:"tinh_thanh"`
+		QuanHuyen           string    `json:"quan_huyen"`
+		PhuongXa            string    `json:"phuong_xa"`
+		DuongSoNha          string    `json:"duong_so_nha"`
+		SoDienThoai        string    `json:"so_dien_thoai"`
+		PhuongThucThanhToan string    `json:"phuong_thuc_thanh_toan"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		return
+	}
+	if donhang, err := h.service.ThanhToan(req.GioHang, req.MaNguoiDung, req.TinhThanh, req.QuanHuyen, req.PhuongXa, req.DuongSoNha, req.PhuongThucThanhToan, req.SoDienThoai); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		return
+	} else {
+		c.JSON(http.StatusOK, gin.H{"message": "Thanh toán thành công", "data": donhang})
+	}
 }

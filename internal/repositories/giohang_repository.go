@@ -18,14 +18,20 @@ type GioHangRepository interface {
 	XoaGioHang(giohang models.GioHang) error
 	GetAll(manguoidung int) ([]models.GioHang, error)
 	GetAllGia(manguoidung int) (float64, error)
-	GetByID(mabienthe int) ([]models.GioHang, error)
-	CreateDH(donHang models.DonHang) error
-	GetSanPham(mabienthe int, soluong int) ([]models.SanPham, error)
+	CheckBienThe(maBienThe int, gia int, soLuong int) error
+	CreateDonHang(tx *gorm.DB, donhang *models.DonHang) error
+	BeginTransaction() *gorm.DB
+	GetSanPham(tx *gorm.DB, maBienThe int, soLuong int) ([]models.SanPham, error)
+	CreateChiTietDonHang(tx *gorm.DB, chiTiet []models.ChiTietDonHang) error
+	XoaGioHangCuaNguoiDung(tx *gorm.DB, manguoidung int) error
+	UpdateTonKhoBienThe(tx *gorm.DB, maBienThe int, soLuong int) error
 }
 type GioHangRepo struct {
 	db *gorm.DB
 }
-
+func (r *GioHangRepo) BeginTransaction() *gorm.DB {
+	return r.db.Begin()
+}
 func NewGioHangRepository(db *gorm.DB) GioHangRepository {
 	return &GioHangRepo{db: db}
 }
@@ -133,24 +139,6 @@ func (r *GioHangRepo) GetAll(manguoidung int) ([]models.GioHang, error) {
 	return gioHangs, nil
 }
 
-func (r *GioHangRepo) GetSanPham(mabienthe int, soluong int) ([]models.SanPham, error) {
-	var sanPham []models.SanPham
-	err := r.db.Table("san_pham").
-		Select("san_pham.*, chi_tiet_phieu_nhap.GiaNhap as gia_ban").
-		Joins("JOIN chi_tiet_phieu_nhap ON san_pham.MaChiTietPhieuNhap = chi_tiet_phieu_nhap.MaChiTiet").
-		Joins("JOIN bien_the ON chi_tiet_phieu_nhap.MaBienthe = bien_the.MaBienThe").
-		Where("bien_the.MaBienThe = ? AND san_pham.TrangThai = ?", mabienthe, "Chưa bán").
-		Limit(soluong).
-		First(&sanPham).Error
-
-	if err != nil {
-		return sanPham, err
-	}
-	if len(sanPham) < soluong {
-		return sanPham, errors.New("không đủ sản phẩm trong kho")
-	}
-	return sanPham, nil
-}
 
 func (r *GioHangRepo) GetAllGia(manguoidung int) (float64, error) {
 	var totalGia float64
@@ -173,15 +161,69 @@ func (r *GioHangRepo) GetByID(manguoidung int) ([]models.GioHang, error) {
 	return gioHang, nil
 }
 
-func (r *GioHangRepo) CreateDH(donHang models.DonHang) error {
-	return r.db.Create(&donHang).Error
-}
-
-func (r *GioHangRepo) CreateChiTietDonHang(madonhang int, sanpham []models.SanPham) error {
-	for _, sp := range sanpham {
-		if err := r.db.Create(&models.ChiTietDonHang{MaDonHang: madonhang, MaSanPham: sp.MaSanPham, GiaBan: sp.GiaBan}).Error; err != nil {
-			return err
-		}
+func (s *GioHangRepo) CheckBienThe(maBienThe int, gia int, soluong int)  error {
+	var bienThe models.BienThe
+	err := s.db.Where("MaBienThe = ?", maBienThe).First(&bienThe).Error
+	if err != nil {
+		return fmt.Errorf("không tìm thấy sản phẩm mã biến thể %d", maBienThe)
+	}
+	if bienThe.Gia != float64(gia) {
+		return fmt.Errorf("giá sản phẩm mã biến thể %d đã thay đổi (giỏ: %.2f, hiện tại: %.2f)",
+			maBienThe, float64(gia), bienThe.Gia)
+	}
+	if bienThe.SoLuongTon < soluong {
+		return fmt.Errorf("số lượng sản phẩm mã biến thể %d không đủ (giỏ: %d, hiện tại: %d)",
+			maBienThe, soluong, bienThe.SoLuongTon)
 	}
 	return nil
+}
+
+func (r *GioHangRepo) CreateDonHang(tx *gorm.DB, donhang *models.DonHang) error {
+	return tx.Create(donhang).Error
+}
+
+func (r *GioHangRepo) GetSanPham(tx *gorm.DB, maBienThe int, soLuong int) ([]models.SanPham, error) {
+	var sanPhams []models.SanPham
+
+	// ✅ 1. Lấy sản phẩm chưa bán thuộc biến thể cụ thể
+	if err := tx.
+		Table("SanPham").
+		Joins("JOIN ChiTietPhieuNhap ON ChiTietPhieuNhap.MaChiTiet = SanPham.MaChiTietPhieuNhap").
+		Where("ChiTietPhieuNhap.MaBienThe = ? AND SanPham.TrangThai = ?", maBienThe, "Chưa bán").
+		Limit(soLuong).
+		Find(&sanPhams).Error; err != nil {
+		return nil, err
+	}
+
+	if len(sanPhams) < soLuong {
+		return nil, fmt.Errorf("không đủ hàng trong kho cho biến thể %d", maBienThe)
+	}
+
+	// 2️⃣ Cập nhật trạng thái thành "Chờ duyệt"
+	ids := make([]int, len(sanPhams))
+	for i, sp := range sanPhams {
+		ids[i] = sp.MaSanPham
+	}
+
+	if err := tx.Model(&models.SanPham{}).
+		Where("MaSanPham IN ?", ids).
+		Update("TrangThai", "Chờ duyệt").Error; err != nil {
+		return nil, err
+	}
+
+	// 3️⃣ Trả về danh sách sản phẩm đã cập nhật
+	return sanPhams, nil
+}
+
+func (r *GioHangRepo) CreateChiTietDonHang(tx *gorm.DB, chiTiet []models.ChiTietDonHang) error {
+	return tx.Create(&chiTiet).Error
+}
+
+func (s *GioHangRepo) XoaGioHangCuaNguoiDung(tx *gorm.DB, manguoidung int) error {
+	return tx.Where("MaNguoiDung = ?", manguoidung).Delete(&models.GioHang{}).Error
+}
+func (r *GioHangRepo) UpdateTonKhoBienThe(tx *gorm.DB, maBienThe int, soLuong int) error {
+	return tx.Model(&models.BienThe{}).
+		Where("MaBienThe = ?", maBienThe).
+		Update("SoLuongTon", gorm.Expr("SoLuongTon - ?", soLuong)).Error
 }

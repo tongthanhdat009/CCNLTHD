@@ -14,7 +14,7 @@ import (
 
 const (
 	RefreshTokenDuration = time.Hour * 24 * 7 // 7 ngày
-	AccessTokenDuration  = time.Minute * 15   // 15 phút
+	AccessTokenDuration  = time.Minute * 100000   // 100000 phút
 )
 
 type DangNhapService interface {
