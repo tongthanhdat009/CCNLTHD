@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th9 26, 2025 lúc 04:48 PM
+-- Thời gian đã tạo: Th10 12, 2025 lúc 06:29 PM
 -- Phiên bản máy phục vụ: 10.4.32-MariaDB
 -- Phiên bản PHP: 8.2.12
 
@@ -41,8 +41,8 @@ CREATE TABLE `bienthe` (
 --
 
 INSERT INTO `bienthe` (`MaBienThe`, `MaHangHoa`, `Size`, `Gia`, `SoLuongTon`, `TrangThai`) VALUES
-(4, 1, '40', 2500000.00, 10, 'DangBan'),
-(5, 1, '41', 2500000.00, 5, 'DangBan'),
+(4, 1, '40', 2500000.00, 4, 'DangBan'),
+(5, 1, '41', 2500000.00, 2, 'DangBan'),
 (6, 1, '42', 2600000.00, 0, 'DangBan'),
 (7, 2, '39', 3000000.00, 0, 'DangBan'),
 (8, 2, '40', 3000000.00, 0, 'DangBan'),
@@ -123,6 +123,18 @@ CREATE TABLE `chitietdonhang` (
   `GiaBan` decimal(12,2) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Đang đổ dữ liệu cho bảng `chitietdonhang`
+--
+
+INSERT INTO `chitietdonhang` (`MaChiTiet`, `MaDonHang`, `MaSanPham`, `GiaBan`) VALUES
+(26, 13, 3, 2500000.00),
+(27, 13, 4, 2500000.00),
+(28, 13, 1, 2500000.00),
+(29, 15, 2, 2500000.00),
+(30, 16, 1, 2500000.00),
+(31, 17, 2, 2500000.00);
+
 -- --------------------------------------------------------
 
 --
@@ -144,8 +156,8 @@ CREATE TABLE `chitietphieunhap` (
 --
 
 INSERT INTO `chitietphieunhap` (`MaChiTiet`, `MaPhieuNhap`, `MaBienthe`, `SoLuong`, `GiaNhap`, `NgaySanXuat`, `ThoiGianBaoHanh`) VALUES
-(1, 1, 4, 10, 1200000.00, '2025-08-01', 12),
-(2, 1, 5, 5, 1200000.00, '2025-08-01', 12);
+(1, 1, 5, 2, 150000.00, NULL, 6),
+(2, 1, 4, 2, 200000.00, NULL, 6);
 
 -- --------------------------------------------------------
 
@@ -184,20 +196,13 @@ INSERT INTO `chucnang` (`MaChucNang`, `TenChucNang`) VALUES
 
 CREATE TABLE `danhgia` (
   `MaDanhGia` int(11) NOT NULL,
-  `MaSanPham` int(11) NOT NULL,
+  `MaHangHoa` int(11) NOT NULL,
   `MaNguoiDung` int(11) NOT NULL,
   `Diem` int(11) NOT NULL,
   `NoiDung` varchar(255) DEFAULT NULL,
   `TrangThai` varchar(50) DEFAULT 'Chưa duyệt',
   `NgayDanhGia` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Đang đổ dữ liệu cho bảng `danhgia`
---
-
-INSERT INTO `danhgia` (`MaDanhGia`, `MaSanPham`, `MaNguoiDung`, `Diem`, `NoiDung`, `TrangThai`, `NgayDanhGia`) VALUES
-(1, 1, 3, 5, 'Giày đẹp, vừa vặn, chất lượng tốt', 'Chưa duyệt', '2025-09-16 11:59:42');
 
 -- --------------------------------------------------------
 
@@ -237,8 +242,19 @@ CREATE TABLE `donhang` (
   `QuanHuyen` varchar(100) DEFAULT NULL,
   `PhuongXa` varchar(100) DEFAULT NULL,
   `DuongSoNha` varchar(150) DEFAULT NULL,
-  `PhuongThucThanhToan` varchar(50) DEFAULT 'Tiền mặt'
+  `PhuongThucThanhToan` varchar(50) DEFAULT 'Tiền mặt',
+  `SoDienThoai` varchar(10) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `donhang`
+--
+
+INSERT INTO `donhang` (`MaDonHang`, `MaNguoiDung`, `NgayTao`, `TrangThai`, `TongTien`, `TinhThanh`, `QuanHuyen`, `PhuongXa`, `DuongSoNha`, `PhuongThucThanhToan`, `SoDienThoai`) VALUES
+(13, 1, '2025-10-12 23:05:22', 'Đang xử lý', 7500000.00, 'TP. Hồ Chí Minh', 'Quận 1', 'Phường Bến Nghé', '12 Nguyễn Huệ', 'COD', '0909123456'),
+(15, 1, '2025-10-12 23:07:40', 'Đang xử lý', 2500000.00, 'TP. Hồ Chí Minh', 'Quận 1', 'Phường Bến Nghé', '12 Nguyễn Huệ', 'COD', '0909123456'),
+(16, 1, '2025-10-12 23:17:39', 'Đang xử lý', 2500000.00, 'TP. Hồ Chí Minh', 'Quận 1', 'Phường Bến Nghé', '12 Nguyễn Huệ', 'COD', '0909123456'),
+(17, 1, '2025-10-12 23:18:10', 'Đang xử lý', 2500000.00, 'TP. Hồ Chí Minh', 'Quận 1', 'Phường Bến Nghé', '12 Nguyễn Huệ', 'COD', '0909123456');
 
 -- --------------------------------------------------------
 
@@ -453,7 +469,7 @@ CREATE TABLE `phieunhap` (
 --
 
 INSERT INTO `phieunhap` (`MaPhieuNhap`, `MaNguoiDung`, `MaNCC`, `NgayNhap`, `TrangThai`, `MoTa`) VALUES
-(1, 2, 1, '2025-09-16 10:00:00', 'Đã duyệt', 'Nhập lô giày Nike đỏ');
+(1, 1, 1, '2025-10-12 22:46:42', 'Đã duyệt', NULL);
 
 -- --------------------------------------------------------
 
@@ -511,7 +527,9 @@ INSERT INTO `refreshtoken` (`MaToken`, `MaNguoiDung`, `Token`, `NgayTao`, `NgayH
 (16, 9, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTk0OTU4ODgsIm1hX25ndW9pX2R1bmciOjksInR5cGUiOiJyZWZyZXNoIn0.6a8cwfQwy2Z_qgM6se_ASd3sntA0HSQesRS_IWf2BMo', '2025-09-26 19:51:28', '2025-10-03 19:51:28', 'Hoạt Động'),
 (17, 9, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTk0OTU5ODIsIm1hX25ndW9pX2R1bmciOjksInR5cGUiOiJyZWZyZXNoIn0.q7a6qnMS82KmYrY6k2PPaDmkcypuOQk9eRckDq4vl1I', '2025-09-26 19:53:02', '2025-10-03 19:53:02', 'Hoạt Động'),
 (18, 9, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTk0OTc5MDIsIm1hX25ndW9pX2R1bmciOjksInR5cGUiOiJyZWZyZXNoIn0.Jqir5Zw2C9S4TJuyqD2JNLd75Ekx62ha4YVjOiItreE', '2025-09-26 20:25:02', '2025-10-03 20:25:02', 'Hoạt Động'),
-(19, 9, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTk0OTg5MTIsIm1hX25ndW9pX2R1bmciOjksInR5cGUiOiJyZWZyZXNoIn0.F2vgL3gyIkC9J6YuCWAnY-3hj6iPxqdZLpTVF79NnQk', '2025-09-26 20:41:52', '2025-10-03 20:41:52', 'Hoạt Động');
+(19, 9, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTk0OTg5MTIsIm1hX25ndW9pX2R1bmciOjksInR5cGUiOiJyZWZyZXNoIn0.F2vgL3gyIkC9J6YuCWAnY-3hj6iPxqdZLpTVF79NnQk', '2025-09-26 20:41:52', '2025-10-03 20:41:52', 'Hoạt Động'),
+(20, 9, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NjA4ODkwNDksIm1hX25ndW9pX2R1bmciOjksInR5cGUiOiJyZWZyZXNoIn0.49rL4Zf8jM0-t8YVz_I7VnmUR_O740Zu29XmKcNg20g', '2025-10-12 22:50:49', '2025-10-19 22:50:49', 'Hoạt Động'),
+(21, 9, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NjA4ODk5NjEsIm1hX25ndW9pX2R1bmciOjksInR5cGUiOiJyZWZyZXNoIn0.E4uzVCYrFqDxzrSll5C-hHgOE6nFvJrc6lTxS47WCQo', '2025-10-12 23:06:01', '2025-10-19 23:06:01', 'Hoạt Động');
 
 -- --------------------------------------------------------
 
@@ -531,21 +549,10 @@ CREATE TABLE `sanpham` (
 --
 
 INSERT INTO `sanpham` (`MaSanPham`, `MaChiTietPhieuNhap`, `Seri`, `TrangThai`) VALUES
-(1, 1, 'NIKE-RED-40-001', 'Chưa bán'),
-(2, 1, 'NIKE-RED-40-002', 'Chưa bán'),
-(3, 1, 'NIKE-RED-40-003', 'Chưa bán'),
-(4, 1, 'NIKE-RED-40-004', 'Chưa bán'),
-(5, 1, 'NIKE-RED-40-005', 'Chưa bán'),
-(6, 1, 'NIKE-RED-40-006', 'Chưa bán'),
-(7, 1, 'NIKE-RED-40-007', 'Chưa bán'),
-(8, 1, 'NIKE-RED-40-008', 'Chưa bán'),
-(9, 1, 'NIKE-RED-40-009', 'Chưa bán'),
-(10, 1, 'NIKE-RED-40-010', 'Chưa bán'),
-(11, 2, 'NIKE-RED-41-001', 'Chưa bán'),
-(12, 2, 'NIKE-RED-41-002', 'Chưa bán'),
-(13, 2, 'NIKE-RED-41-003', 'Chưa bán'),
-(14, 2, 'NIKE-RED-41-004', 'Chưa bán'),
-(15, 2, 'NIKE-RED-41-005', 'Chưa bán');
+(1, 1, 'HEHE', 'Chờ duyệt'),
+(2, 1, 'HAHA', 'Chờ duyệt'),
+(3, 2, 'HIHI', 'Chưa bán'),
+(4, 2, 'HOHO', 'Chưa bán');
 
 -- --------------------------------------------------------
 
@@ -608,8 +615,8 @@ ALTER TABLE `chucnang`
 --
 ALTER TABLE `danhgia`
   ADD PRIMARY KEY (`MaDanhGia`),
-  ADD KEY `MaSanPham` (`MaSanPham`),
-  ADD KEY `MaNguoiDung` (`MaNguoiDung`);
+  ADD KEY `MaNguoiDung` (`MaNguoiDung`),
+  ADD KEY `fk_danhgia_hanghoa` (`MaHangHoa`);
 
 --
 -- Chỉ mục cho bảng `danhmuc`
@@ -732,7 +739,7 @@ ALTER TABLE `chitietchucnang`
 -- AUTO_INCREMENT cho bảng `chitietdonhang`
 --
 ALTER TABLE `chitietdonhang`
-  MODIFY `MaChiTiet` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `MaChiTiet` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
 
 --
 -- AUTO_INCREMENT cho bảng `chitietphieunhap`
@@ -762,7 +769,7 @@ ALTER TABLE `danhmuc`
 -- AUTO_INCREMENT cho bảng `donhang`
 --
 ALTER TABLE `donhang`
-  MODIFY `MaDonHang` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `MaDonHang` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT cho bảng `hang`
@@ -810,7 +817,7 @@ ALTER TABLE `quyen`
 -- AUTO_INCREMENT cho bảng `refreshtoken`
 --
 ALTER TABLE `refreshtoken`
-  MODIFY `MaToken` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `MaToken` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT cho bảng `sanpham`
@@ -858,8 +865,9 @@ ALTER TABLE `chitietphieunhap`
 -- Các ràng buộc cho bảng `danhgia`
 --
 ALTER TABLE `danhgia`
-  ADD CONSTRAINT `danhgia_ibfk_1` FOREIGN KEY (`MaSanPham`) REFERENCES `sanpham` (`MaSanPham`),
-  ADD CONSTRAINT `danhgia_ibfk_2` FOREIGN KEY (`MaNguoiDung`) REFERENCES `nguoidung` (`MaNguoiDung`);
+  ADD CONSTRAINT `danhgia_ibfk_1` FOREIGN KEY (`MaHangHoa`) REFERENCES `sanpham` (`MaSanPham`),
+  ADD CONSTRAINT `danhgia_ibfk_2` FOREIGN KEY (`MaNguoiDung`) REFERENCES `nguoidung` (`MaNguoiDung`),
+  ADD CONSTRAINT `fk_danhgia_hanghoa` FOREIGN KEY (`MaHangHoa`) REFERENCES `hanghoa` (`MaHangHoa`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Các ràng buộc cho bảng `donhang`
@@ -924,13 +932,3 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
--- Thêm đơn hàng mẫu
-INSERT INTO `donhang` (`MaDonHang`, `MaNguoiDung`, `NgayTao`, `TrangThai`, `TongTien`, `TinhThanh`, `QuanHuyen`, `PhuongXa`, `DuongSoNha`, `PhuongThucThanhToan`) 
-VALUES (1, 3, '2025-09-26 10:00:00', 'Đã giao', 2500000.00, 'TP. Hồ Chí Minh', 'Quận 1', 'Phường Bến Nghé', 'Số 1 Nguyễn Huệ', 'Tiền mặt');
-
--- Thêm chi tiết đơn hàng mẫu (liên kết với sản phẩm MaSanPham = 1)
-INSERT INTO `chitietdonhang` (`MaChiTiet`, `MaDonHang`, `MaSanPham`, `GiaBan`) 
-VALUES (1, 1, 1, 2500000.00);
-
--- Cập nhật trạng thái sản phẩm thành 'Đã bán'
-UPDATE `sanpham` SET `TrangThai` = 'Đã bán' WHERE `MaSanPham` = 1;

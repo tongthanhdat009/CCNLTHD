@@ -12,6 +12,7 @@ type DonHang struct {
 	QuanHuyen           string    `gorm:"column:QuanHuyen" json:"quan_huyen"`
 	PhuongXa            string    `gorm:"column:PhuongXa" json:"phuong_xa"`
 	DuongSoNha          string    `gorm:"column:DuongSoNha" json:"duong_so_nha"`
+	SoDienThoai        string    `gorm:"column:SoDienThoai" json:"so_dien_thoai"`
 	PhuongThucThanhToan string    `gorm:"column:PhuongThucThanhToan" json:"phuong_thuc_thanh_toan"`
 
 	// --- Mối quan hệ One-to-Many ---

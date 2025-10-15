@@ -5,6 +5,7 @@ import (
 
 	"github.com/tongthanhdat009/CCNLTHD/internal/models"
 	"github.com/tongthanhdat009/CCNLTHD/internal/repositories"
+	"time"
 )
 
 type GioHangService interface {
@@ -12,7 +13,7 @@ type GioHangService interface {
 	SuaGioHang(giohang models.GioHang) error
 	XoaGioHang(giohang models.GioHang) error
 	GetAll(manguoidung int) ([]models.GioHang, error)
-	
+	ThanhToan(giohang []models.GioHang, manguoidung int,tinh string ,quan string, phuong string, sonha string, phuongthucthanhtoan string, sodienthoai string) (models.DonHang, error)
 }
 
 type gioHangService struct {
@@ -80,4 +81,89 @@ func (s *gioHangService) GetAll(manguoidung int) ([]models.GioHang, error) {
 	return s.repo.GetAll(manguoidung)
 }
 
+func (s *gioHangService) ThanhToan(
+	giohang []models.GioHang,
+	manguoidung int,
+	tinh string,
+	quan string,
+	phuong string,
+	sonha string,
+	phuongthucthanhtoan string,
+	sodienthoai string) (models.DonHang, error) {
+
+	tx := s.repo.BeginTransaction()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// 1️⃣ Kiểm tra biến thể
+	for _, item := range giohang {
+		if err := s.repo.CheckBienThe(item.MaBienThe, int(item.Gia), item.SoLuong); err != nil {
+			return models.DonHang{}, err
+		}
+	}
+
+	// 3️⃣ Tạo đơn hàng
+	donhang := models.DonHang{
+		MaNguoiDung:         manguoidung,
+		NgayTao:             time.Now(),
+		TrangThai:           "Đang xử lý",
+		TinhThanh:           tinh,
+		QuanHuyen:           quan,
+		PhuongXa:            phuong,
+		DuongSoNha:          sonha,
+		PhuongThucThanhToan: phuongthucthanhtoan,
+		SoDienThoai:         sodienthoai,
+		TongTien:            0, // Sẽ tính sau
+	}
+
+	var chiTietDonHangs []models.ChiTietDonHang
+	for _, item := range giohang {
+		donhang.TongTien += item.Gia * float64(item.SoLuong)
+	}
+	if err := s.repo.CreateDonHang(tx, &donhang); err != nil {
+		tx.Rollback()
+		return models.DonHang{}, err
+	}
+
+	for _, item := range giohang {
+		
+		sanPhams, err := s.repo.GetSanPham(tx, item.MaBienThe, item.SoLuong)
+		if err != nil {
+			tx.Rollback()
+			return models.DonHang{}, err
+		}
+
+		for _, sp := range sanPhams {
+			chiTietDonHangs = append(chiTietDonHangs, models.ChiTietDonHang{
+				MaDonHang: donhang.MaDonHang,
+				MaSanPham: sp.MaSanPham,
+				GiaBan:    item.Gia, // Giá tại thời điểm thanh toán
+			})
+		}
+	}
+
+	// 5️⃣ Tạo tất cả chi tiết đơn hàng một lượt
+	if err := s.repo.CreateChiTietDonHang(tx, chiTietDonHangs); err != nil {
+		tx.Rollback()
+		return models.DonHang{}, err
+	}
+
+	if err := s.repo.XoaGioHangCuaNguoiDung(tx, manguoidung); err != nil {
+		tx.Rollback()
+		return models.DonHang{}, err
+	}
+
+
+	// 5️⃣ Commit transaction
+	if err := tx.Commit().Error; err != nil {
+		return models.DonHang{}, err
+	}
+
+	donhang.ChiTietDonHangs = chiTietDonHangs
+
+	return donhang, nil
+}
 
