@@ -8,21 +8,21 @@ import (
 
 // SetupRoutes định nghĩa tất cả các route cho ứng dụng.
 func SetupRoutes(r *gin.Engine,
-			hangHoaHandler *handlers.HangHoaHandler,
-	 	 	donHangHandler *handlers.DonHangHandler,
-	   		nguoiDungHandler *handlers.NguoiDungHandler,
-	    	hangHandler *handlers.HangHandler,
-		 	nhaCungCap *handlers.NhaCungCapHandler,
-		  	dangKyHandler *handlers.DangKyHandler,
-		   	dangNhapHandler *handlers.DangNhapHandler,
-			permissionMiddleware *middleware.PermissionMiddleware,
-			gioHangHandler *handlers.GioHangHandler,
-			khuyenMaiHandler *handlers.KhuyenMaiHandler,
-			traCuuAdminHandler *handlers.TraCuuAdminHandler,
-			timKiemHangHoaHandler *handlers.TimKiemHangHoaHandler,
-			bienTheHandler *handlers.QuanLyBienTheHandler,
-			phieuNhapHandler *handlers.QuanLyPhieuNhapHandler,
-			quyenHandler *handlers.QuyenHandler) {
+	hangHoaHandler *handlers.HangHoaHandler,
+	donHangHandler *handlers.DonHangHandler,
+	nguoiDungHandler *handlers.NguoiDungHandler,
+	hangHandler *handlers.HangHandler,
+	nhaCungCap *handlers.NhaCungCapHandler,
+	dangKyHandler *handlers.DangKyHandler,
+	dangNhapHandler *handlers.DangNhapHandler,
+	permissionMiddleware *middleware.PermissionMiddleware,
+	gioHangHandler *handlers.GioHangHandler,
+	khuyenMaiHandler *handlers.KhuyenMaiHandler,
+	traCuuAdminHandler *handlers.TraCuuAdminHandler,
+	timKiemHangHoaHandler *handlers.TimKiemHangHoaHandler,
+	bienTheHandler *handlers.QuanLyBienTheHandler,
+	phieuNhapHandler *handlers.QuanLyPhieuNhapHandler,
+	quyenHandler *handlers.QuyenHandler) {
 	// Các route không cần xác thực
 
 	r.POST("/api/dangky", dangKyHandler.CreateNguoiDung)
@@ -76,16 +76,16 @@ func SetupRoutes(r *gin.Engine,
 			donHangRoutes.POST("/:id/cancel", donHangHandler.CancelOrder)
 		}
 
-        // Routes cho Người Dùng
-        nguoiDungRoutes := api.Group("/nguoidung")
-        {
-            nguoiDungRoutes.GET("", permissionMiddleware.Require("Quản lý người dùng", "Xem"), nguoiDungHandler.GetAllNguoiDung)
-            nguoiDungRoutes.PUT("/:id", permissionMiddleware.RequireUserIDMatch(), nguoiDungHandler.UpdateNguoiDung)
-            nguoiDungRoutes.GET("/admin/:id",permissionMiddleware.Require("Quản lý người dùng", "Xem"), nguoiDungHandler.GetNguoiDungByID)
-            nguoiDungRoutes.GET("/:id",permissionMiddleware.RequireUserIDMatch(), nguoiDungHandler.GetNguoiDungByID)
-            nguoiDungRoutes.PUT("/admin/:id",permissionMiddleware.Require("Quản lý người dùng", "Sửa"), nguoiDungHandler.UpdateNguoiDungAdmin)
-            nguoiDungRoutes.POST("", permissionMiddleware.Require("Quản lý người dùng", "Thêm"), nguoiDungHandler.CreateNguoiDung)
-        }
+		// Routes cho Người Dùng
+		nguoiDungRoutes := api.Group("/nguoidung")
+		{
+			nguoiDungRoutes.GET("", permissionMiddleware.Require("Quản lý người dùng", "Xem"), nguoiDungHandler.GetAllNguoiDung)
+			nguoiDungRoutes.PUT("/:id", permissionMiddleware.RequireUserIDMatch(), nguoiDungHandler.UpdateNguoiDung)
+			nguoiDungRoutes.GET("/admin/:id", permissionMiddleware.Require("Quản lý người dùng", "Xem"), nguoiDungHandler.GetNguoiDungByID)
+			nguoiDungRoutes.GET("/:id", permissionMiddleware.RequireUserIDMatch(), nguoiDungHandler.GetNguoiDungByID)
+			nguoiDungRoutes.PUT("/admin/:id", permissionMiddleware.Require("Quản lý người dùng", "Sửa"), nguoiDungHandler.UpdateNguoiDungAdmin)
+			nguoiDungRoutes.POST("", permissionMiddleware.Require("Quản lý người dùng", "Thêm"), nguoiDungHandler.CreateNguoiDung)
+		}
 
 		// Routes cho Giỏ Hàng
 		gioHangRoutes := api.Group("/giohang")
@@ -176,8 +176,13 @@ func SetupRoutes(r *gin.Engine,
 		//Routes cho Quản lý quyền
 		quyenRoutes := api.Group("/quyen")
 		{
-			quyenRoutes.GET("", quyenHandler.GetAll)
-			quyenRoutes.GET("/:id", quyenHandler.GetByID)
+			quyenRoutes.GET("/chi-tiet-chuc-nang", permissionMiddleware.Require("Quản lý phân quyền", "Xem"), quyenHandler.GetAllChiTietChucNang)
+			quyenRoutes.GET("", permissionMiddleware.Require("Quản lý phân quyền", "Xem"), quyenHandler.GetAll)
+
+			quyenRoutes.GET("/:id", permissionMiddleware.Require("Quản lý phân quyền", "Xem"), quyenHandler.GetByID)
+
+			quyenRoutes.POST("", permissionMiddleware.Require("Quản lý phân quyền", "Thêm"), quyenHandler.CreateQuyen)
+			quyenRoutes.PATCH("/:id/phan-quyen", permissionMiddleware.Require("Quản lý phân quyền", "Sửa"), quyenHandler.PhanQuyen)
 		}
 	}
 }

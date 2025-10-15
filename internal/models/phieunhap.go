@@ -42,8 +42,11 @@ type SanPham struct {
     Seri               string `gorm:"column:Seri" json:"seri"`
     TrangThai          string `gorm:"column:TrangThai" json:"trang_thai"`
 
+    GiaBan             float64 `gorm:"-" json:"gia_ban,omitempty"` // Trường này không lưu trong DB, chỉ để hiển thị
+
+    // Mối quan hệ
     ChiTietPhieuNhap ChiTietPhieuNhap `gorm:"foreignKey:MaChiTietPhieuNhap" json:"chi_tiet_phieu_nhap,omitempty"`
-    ChiTietDonHangs []ChiTietDonHang `gorm:"foreignKey:MaSanPham" json:"chi_tiet_don_hangs,omitempty"`
+    ChiTietDonHangs  []ChiTietDonHang  `gorm:"foreignKey:MaSanPham" json:"chi_tiet_don_hangs,omitempty"`
 }
 
 // --- Cung cấp tên bảng cho GORM ---
