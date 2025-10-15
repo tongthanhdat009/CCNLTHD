@@ -20,7 +20,9 @@ func SetupRoutes(r *gin.Engine,
 	khuyenMaiHandler *handlers.KhuyenMaiHandler,
 	traCuuAdminHandler *handlers.TraCuuAdminHandler,
 	timKiemSanPhamHandler *handlers.TimKiemSanPhamHandler,
-	reviewHandler *handlers.ReviewHandler) {
+	reviewHandler *handlers.ReviewHandler,
+	adminReviewHandler *handlers.AdminReviewHandler,
+) {
 	// Các route không cần xác thực
 
 	r.POST("/api/dangky", dangKyHandler.CreateNguoiDung)
@@ -109,7 +111,7 @@ func SetupRoutes(r *gin.Engine,
 		{
 			timKiemSanPhamRoutes.GET("", timKiemSanPhamHandler.TimSanPham)
 		}
-		// Routes cho Đánh giá sản phẩm (yêu cầu đã có reviewHandler trong scope)
+		// KH đánh giá
 		reviews := api.Group("/reviews")
 		{
 			// Khách hàng gửi đánh giá
@@ -121,26 +123,26 @@ func SetupRoutes(r *gin.Engine,
 			// Xem đánh giá theo 1 sản phẩm nhập kho (MaSanPham)
 			reviews.GET("/product/:id", reviewHandler.GetByProduct)
 		}
-
-		// Routes ADMIN cho Đánh giá (cần quyền "Quản lý đánh giá" - "Xử lý")
-		adminReviews := api.Group("/admin/reviews")
+		// Routes ADMIN cho Đánh giá (lọc/duyệt/từ chối/xóa)
+		admin := api.Group("/admin/reviews")
 		{
-			adminReviews.GET("",
+			admin.GET("",
 				permissionMiddleware.Require("Quản lý đánh giá", "Xử lý"),
-				reviewHandler.AdminList,
+				adminReviewHandler.List,
 			)
-			adminReviews.PUT("/:id/approve",
+			admin.PUT("/:id/approve",
 				permissionMiddleware.Require("Quản lý đánh giá", "Xử lý"),
-				reviewHandler.Approve,
+				adminReviewHandler.Approve,
 			)
-			adminReviews.PUT("/:id/reject",
+			admin.PUT("/:id/reject",
 				permissionMiddleware.Require("Quản lý đánh giá", "Xử lý"),
-				reviewHandler.Reject,
+				adminReviewHandler.Reject,
 			)
-			adminReviews.DELETE("/:id",
+			admin.DELETE("/:id",
 				permissionMiddleware.Require("Quản lý đánh giá", "Xử lý"),
-				reviewHandler.Delete,
+				adminReviewHandler.Delete,
 			)
 		}
+
 	}
 }

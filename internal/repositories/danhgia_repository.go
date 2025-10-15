@@ -1,44 +1,75 @@
 package repositories
 
 import (
-    "gorm.io/gorm"
-    "github.com/tongthanhdat009/CCNLTHD/internal/models"
+	"context"
+	"fmt"
+
+	"github.com/tongthanhdat009/CCNLTHD/internal/models"
+	"gorm.io/gorm"
 )
 
-type ReviewRepository struct {
-    DB *gorm.DB
+type ReviewRepository interface {
+	UserPurchasedHangHoa(ctx context.Context, userID, maHH int) (bool, error)
+	InsertHangHoa(ctx context.Context, userID, maHH int, dto models.CreateReviewDTO) (int64, error)
+	ListApprovedByHangHoa(ctx context.Context, maHH int) ([]models.Review, error)
+	ListByUser(ctx context.Context, userID int) ([]models.Review, error)
 }
 
-func NewReviewRepository(db *gorm.DB) *ReviewRepository {
-    return &ReviewRepository{DB: db}
+type reviewRepository struct{ db *gorm.DB }
+
+func NewReviewRepository(db *gorm.DB) ReviewRepository { return &reviewRepository{db: db} }
+
+// JOIN: donhang → chitietdonhang → sanpham → chitietphieunhap → bienthe (MaHangHoa)
+func (r *reviewRepository) UserPurchasedHangHoa(ctx context.Context, userID, maHH int) (bool, error) {
+	var purchased int
+	err := r.db.WithContext(ctx).Raw(`
+		SELECT EXISTS(
+		  SELECT 1
+		  FROM donhang dh
+		  JOIN chitietdonhang ct  ON ct.MaDonHang = dh.MaDonHang
+		  JOIN sanpham sp         ON sp.MaSanPham = ct.MaSanPham
+		  JOIN chitietphieunhap c ON c.MaChiTiet  = sp.MaChiTietPhieuNhap
+		  JOIN bienthe bt         ON bt.MaBienThe = c.MaBienThe
+		  WHERE dh.MaNguoiDung = ? AND bt.MaHangHoa = ?
+		  LIMIT 1
+		) AS purchased
+	`, userID, maHH).Row().Scan(&purchased)
+	if err != nil {
+		return false, fmt.Errorf("UserPurchasedHangHoa: %w", err)
+	}
+	return purchased == 1, nil
 }
 
-func (r *ReviewRepository) Create(review *models.DanhGia) error {
-    return r.DB.Create(review).Error
+func (r *reviewRepository) InsertHangHoa(ctx context.Context, userID, maHH int, dto models.CreateReviewDTO) (int64, error) {
+	rec := models.Review{
+		MaHangHoa:   maHH,
+		MaNguoiDung: userID,
+		Diem:        dto.Diem,
+		NoiDung:     dto.NoiDung,
+		TrangThai:   models.ReviewStatusPending,
+		NgayDanhGia: dto.Now(), // xem helper ở models phía dưới
+	}
+	if err := r.db.WithContext(ctx).Table(rec.TableName()).Create(&rec).Error; err != nil {
+		return 0, fmt.Errorf("InsertHangHoa: %w", err)
+	}
+	return int64(rec.MaDanhGia), nil
 }
 
-func (r *ReviewRepository) GetByProduct(maSanPham int) ([]models.DanhGia, error) {
-    var list []models.DanhGia
-    err := r.DB.Where("MaSanPham = ? AND TrangThai = 'Đã duyệt'", maSanPham).Find(&list).Error
-    return list, err
+func (r *reviewRepository) ListApprovedByHangHoa(ctx context.Context, maHH int) ([]models.Review, error) {
+	var out []models.Review
+	err := r.db.WithContext(ctx).
+		Table((models.Review{}).TableName()).
+		Where("MaHangHoa = ? AND TrangThai = ?", maHH, models.ReviewStatusApproved).
+		Order("NgayDanhGia DESC").
+		Find(&out).Error
+	return out, err
 }
-
-func (r *ReviewRepository) GetByUser(maNguoiDung int) ([]models.DanhGia, error) {
-    var list []models.DanhGia
-    err := r.DB.Where("MaNguoiDung = ?", maNguoiDung).Order("NgayDanhGia DESC").Find(&list).Error
-    return list, err
-}
-
-func (r *ReviewRepository) Approve(maDanhGia int) error {
-    return r.DB.Model(&models.DanhGia{}).Where("MaDanhGia = ?", maDanhGia).
-        Update("TrangThai", "Đã duyệt").Error
-}
-
-func (r *ReviewRepository) Reject(maDanhGia int) error {
-    return r.DB.Model(&models.DanhGia{}).Where("MaDanhGia = ?", maDanhGia).
-        Update("TrangThai", "Từ chối").Error
-}
-
-func (r *ReviewRepository) Delete(maDanhGia int) error {
-    return r.DB.Delete(&models.DanhGia{}, maDanhGia).Error
+func (r *reviewRepository) ListByUser(ctx context.Context, userID int) ([]models.Review, error) {
+	var out []models.Review
+	err := r.db.WithContext(ctx).
+		Table((models.Review{}).TableName()).
+		Where("MaNguoiDung = ?", userID).
+		Order("NgayDanhGia DESC").
+		Find(&out).Error
+	return out, err
 }

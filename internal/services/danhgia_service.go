@@ -1,52 +1,42 @@
 package services
 
 import (
-	"database/sql"
+	"context"
 	"errors"
+	"fmt"
 
 	"github.com/tongthanhdat009/CCNLTHD/internal/models"
 	"github.com/tongthanhdat009/CCNLTHD/internal/repositories"
 )
 
-type ReviewService struct {
-	Repo *repositories.ReviewRepository
+type ReviewService interface {
+	Create(ctx context.Context, userID int, dto models.CreateReviewDTO) (int64, error)
+	ListApprovedByHangHoa(ctx context.Context, maHH int) ([]models.Review, error)
+	ListMine(ctx context.Context, userID int) ([]models.Review, error)
 }
 
-func NewReviewService(repo *repositories.ReviewRepository) *ReviewService {
-	return &ReviewService{Repo: repo}
+type reviewService struct{ repo repositories.ReviewRepository }
+
+func NewReviewService(repo repositories.ReviewRepository) ReviewService {
+	return &reviewService{repo: repo}
 }
 
-func (s *ReviewService) Create(maNguoiDung, maSanPham, diem int, noiDung string) error {
-	if diem < 1 || diem > 5 {
-		return errors.New("Điểm phải từ 1 đến 5")
+func (s *reviewService) Create(ctx context.Context, userID int, dto models.CreateReviewDTO) (int64, error) {
+	if dto.Diem < 1 || dto.Diem > 5 {
+		return 0, errors.New("điểm phải từ 1 đến 5")
 	}
-
-	rv := &models.DanhGia{
-		MaNguoiDung: maNguoiDung,
-		MaSanPham:   maSanPham,
-		Diem:        diem,
-		NoiDung:     sql.NullString{String: noiDung, Valid: noiDung != ""},
-		TrangThai:   "Chưa duyệt",
+	ok, err := s.repo.UserPurchasedHangHoa(ctx, userID, dto.MaHangHoa)
+	if err != nil {
+		return 0, err
 	}
-	return s.Repo.Create(rv)
+	if !ok {
+		return 0, fmt.Errorf("Bạn chưa mua hàng hóa này")
+	}
+	return s.repo.InsertHangHoa(ctx, userID, dto.MaHangHoa, dto)
 }
-
-func (s *ReviewService) GetByProduct(maSanPham int) ([]models.DanhGia, error) {
-	return s.Repo.GetByProduct(maSanPham)
+func (s *reviewService) ListApprovedByHangHoa(ctx context.Context, maHH int) ([]models.Review, error) {
+	return s.repo.ListApprovedByHangHoa(ctx, maHH)
 }
-
-func (s *ReviewService) GetByUser(maNguoiDung int) ([]models.DanhGia, error) {
-	return s.Repo.GetByUser(maNguoiDung)
-}
-
-func (s *ReviewService) Approve(maDanhGia int) error {
-	return s.Repo.Approve(maDanhGia)
-}
-
-func (s *ReviewService) Reject(maDanhGia int) error {
-	return s.Repo.Reject(maDanhGia)
-}
-
-func (s *ReviewService) Delete(maDanhGia int) error {
-	return s.Repo.Delete(maDanhGia)
+func (s *reviewService) ListMine(ctx context.Context, userID int) ([]models.Review, error) {
+	return s.repo.ListByUser(ctx, userID)
 }

@@ -1,103 +1,71 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
+	"github.com/tongthanhdat009/CCNLTHD/internal/models"
 	"github.com/tongthanhdat009/CCNLTHD/internal/services"
 )
 
-type ReviewHandler struct {
-	Service *services.ReviewService
-}
+type ReviewHandler struct{ svc services.ReviewService }
 
-func (h *ReviewHandler) AdminList(c *gin.Context) {
-	c.JSON(http.StatusNotImplemented, gin.H{"message": "AdminList: not implemented yet"})
-}
+func NewReviewHandler(svc services.ReviewService) *ReviewHandler { return &ReviewHandler{svc: svc} }
 
-func (h *ReviewHandler) Approve(c *gin.Context) {
-	_, _ = strconv.Atoi(c.Param("id"))
-	c.JSON(http.StatusNotImplemented, gin.H{"message": "Approve: not implemented yet"})
-}
-
-func (h *ReviewHandler) Reject(c *gin.Context) {
-	_, _ = strconv.Atoi(c.Param("id"))
-	c.JSON(http.StatusNotImplemented, gin.H{"message": "Reject: not implemented yet"})
-}
-
-func (h *ReviewHandler) Delete(c *gin.Context) {
-	_, _ = strconv.Atoi(c.Param("id"))
-	c.JSON(http.StatusNotImplemented, gin.H{"message": "Delete: not implemented yet"})
-}
-func getUserID(c *gin.Context) (int, bool) {
-	claimsRaw, ok := c.Get("user")
-	if !ok {
-		return 0, false
-	}
-	claims := claimsRaw.(jwt.MapClaims)
-	v, ok := claims["ma_nguoi_dung"].(float64)
-	if !ok {
-		return 0, false
-	}
-	return int(v), true
-}
-
-// POST /api/reviews
 func (h *ReviewHandler) Create(c *gin.Context) {
-	uid, ok := getUserID(c)
-	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "chưa đăng nhập"})
+	var dto models.CreateReviewDTO
+	if err := c.ShouldBind(&dto); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
-
-	var req struct {
-		MaSanPham int    `json:"ma_san_pham"`
-		Diem      int    `json:"diem"`
-		NoiDung   string `json:"noi_dung"`
-	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	log.Printf("[Review/Create] uid=%v maHangHoa=%v", userIDFromCtx(c), dto.MaHangHoa)
+	uid := userIDFromCtx(c)
+	id, err := h.svc.Create(c.Request.Context(), uid, dto)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
-
-	if err := h.Service.Create(uid, req.MaSanPham, req.Diem, req.NoiDung); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"message": "Đánh giá đã gửi, chờ duyệt"})
+	c.JSON(http.StatusCreated, gin.H{"message": "Đã gửi đánh giá, chờ duyệt", "id": id})
 }
 
-// GET /api/reviews/product/:id
+// GET /api/reviews/product/:id  (id ở đây là MaHangHoa)
 func (h *ReviewHandler) GetByProduct(c *gin.Context) {
-	id, _ := strconv.Atoi(c.Param("id"))
-	list, err := h.Service.GetByProduct(id)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	maHH, err := strconv.Atoi(c.Param("id"))
+	if err != nil || maHH <= 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "id hàng hóa không hợp lệ"})
 		return
 	}
-	c.JSON(http.StatusOK, list)
+	items, err := h.svc.ListApprovedByHangHoa(c.Request.Context(), maHH)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, items)
 }
 
-// GET /api/reviews/me
 func (h *ReviewHandler) GetMine(c *gin.Context) {
-	uid, ok := getUserID(c)
-	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "chưa đăng nhập"})
-		return
-	}
-	list, err := h.Service.GetByUser(uid)
+	uid := userIDFromCtx(c)
+	items, err := h.svc.ListMine(c.Request.Context(), uid)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, list)
-
+	c.JSON(http.StatusOK, items)
 }
-func NewReviewHandler(reviewService *services.ReviewService) *ReviewHandler {
-	return &ReviewHandler{
-		Service: reviewService,
+
+// helper
+func userIDFromCtx(c *gin.Context) int {
+	if v, ok := c.Get("userID"); ok {
+		if id, ok2 := v.(int); ok2 && id > 0 {
+			return id
+		}
 	}
+	if h := c.GetHeader("X-User-ID"); h != "" {
+		if id, err := strconv.Atoi(h); err == nil && id > 0 {
+			return id
+		}
+	}
+	return 0
 }

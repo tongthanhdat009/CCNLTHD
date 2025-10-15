@@ -82,10 +82,15 @@ func main() {
 	timKiemSanPhamRepo := repositories.NewTimKiemSanPhamRepository(database)
 	timKiemSanPhamService := services.NewTimKiemSanPhamService(timKiemSanPhamRepo)
 	timKiemSanPhamHandler := handlers.NewTimKiemSanPhamHandler(timKiemSanPhamService)
-	//Đánh giá
+	//đánh giá KH
 	reviewRepo := repositories.NewReviewRepository(database)
-	reviewService := services.NewReviewService(reviewRepo)
-	reviewHandler := handlers.NewReviewHandler(reviewService)
+	reviewSvc := services.NewReviewService(reviewRepo)
+	reviewHdl := handlers.NewReviewHandler(reviewSvc) // nếu không dùng chung handler cho admin
+
+	// đánh giá ADMIN
+	adminReviewRepo := repositories.NewAdminReviewRepository(database)
+	adminReviewSvc := services.NewAdminReviewService(adminReviewRepo)
+	adminReviewHdl := handlers.NewAdminReviewHandler(adminReviewSvc)
 	// --- Thiết lập server ---
 	r := gin.Default()
 	r.Static("/AnhHangHoa", "./static/AnhHangHoa")
@@ -103,7 +108,8 @@ func main() {
 		khuyenMaiHandler,
 		traCuuAdminHandler,
 		timKiemSanPhamHandler,
-		reviewHandler,
+		reviewHdl,
+		adminReviewHdl,
 	)
 
 	log.Println("Starting server on :8080")
