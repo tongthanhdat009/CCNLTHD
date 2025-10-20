@@ -1,7 +1,5 @@
 package models
 
-import "time"
-
 // ChucNang model
 type ChucNang struct {
     MaChucNang       int                 `gorm:"primaryKey;column:MaChucNang" json:"ma_chuc_nang"`
@@ -14,16 +12,17 @@ type ChiTietChucNang struct {
     MaChiTietChucNang int          `gorm:"primaryKey;column:MaChiTietChucNang" json:"ma_chi_tiet_chuc_nang"`
     MaChucNang        int          `gorm:"column:MaChucNang" json:"-"`
     TenChiTietChucNang string      `gorm:"column:TenChiTietChucNang" json:"ten_chi_tiet_chuc_nang"`
+
+    PhanQuyens       []PhanQuyen `gorm:"foreignKey:MaChiTietChucNang" json:"phan_quyens,omitempty"`
 }
 
 // PhanQuyen model (bảng trung gian)
 type PhanQuyen struct {
-    ID                 int                 `gorm:"primaryKey;autoIncrement" json:"id"`
-    MaQuyen            int                 `gorm:"column:MaQuyen" json:"ma_quyen"`
-    MaChiTietChucNang int                 `gorm:"column:MaChiTietChucNang" json:"ma_chi_tiet_chuc_nang"`
-    NgayTao            time.Time           `gorm:"column:NgayTao;autoCreateTime" json:"ngay_tao"`
-    TrangThai         string              `gorm:"column:TrangThai" json:"trang_thai"`
+    MaQuyen            int    `gorm:"column:MaQuyen;primaryKey" json:"ma_quyen"`
+    MaChiTietChucNang  int    `gorm:"column:MaChiTietChucNang;primaryKey" json:"ma_chi_tiet_chuc_nang"`
+    TrangThai          string `gorm:"column:TrangThai" json:"trang_thai"`
 }
+
 
 // --- Cung cấp tên bảng cho GORM ---
 func (ChucNang) TableName() string { return "chucnang" }

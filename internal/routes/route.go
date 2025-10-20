@@ -22,7 +22,8 @@ func SetupRoutes(r *gin.Engine,
 			timKiemHangHoaHandler *handlers.TimKiemHangHoaHandler,
 			bienTheHandler *handlers.QuanLyBienTheHandler,
 			phieuNhapHandler *handlers.QuanLyPhieuNhapHandler,
-			quyenHandler *handlers.QuyenHandler) {
+			quyenHandler *handlers.QuyenHandler,
+			phanQuyenHandler *handlers.PhanQuyenHandler) {
 	// Các route không cần xác thực
 
 	r.POST("/api/dangky", dangKyHandler.CreateNguoiDung)
@@ -179,6 +180,14 @@ func SetupRoutes(r *gin.Engine,
 		{
 			quyenRoutes.GET("", quyenHandler.GetAll)
 			quyenRoutes.GET("/:id", quyenHandler.GetByID)
+		}
+
+		//Routes cho Phân quyền
+		phanQuyenRoutes := api.Group("/phanquyen")
+		{
+			phanQuyenRoutes.GET("", phanQuyenHandler.GetAll)
+			phanQuyenRoutes.GET("/:id", phanQuyenHandler.GetByID)
+			phanQuyenRoutes.PUT("", phanQuyenHandler.UpdatePhanQuyen)
 		}
 	}
 }
