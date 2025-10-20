@@ -48,5 +48,9 @@ func (h *TraCuuAdminHandler) GetSanPhamByTrangThai(c *gin.Context) {
         c.JSON(500, gin.H{"error": err.Error()})
         return
     }
+    if len(sanphams) == 0 {
+        c.JSON(404, gin.H{"error": "không có sản phẩm nào với trạng thái này"})
+        return
+    }
     c.JSON(200, sanphams)
 }

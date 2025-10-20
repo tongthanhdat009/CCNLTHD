@@ -22,14 +22,28 @@ func NewTraCuuAdminRepository(repo repositories.TraCuuAdminRepository) TraCuuAdm
 
 func (s *traCuuAdminService) GetSanPhamBySeries(seri string) (models.SanPham, error) {
 	if strings.TrimSpace(seri) == "" {
-		return models.SanPham{}, nil // Hoặc trả về lỗi tùy theo yêu cầu
+		return models.SanPham{}, errors.New("không được để trống seri") 
 	}
-	return s.repo.GetSanPhamBySeries(seri)
+
+	var sanPham models.SanPham
+	if result, err := s.repo.GetSanPhamBySeries(seri); err != nil {
+		return sanPham, errors.New("sản phẩm không tồn tại")
+	} else {
+		sanPham = result
+	}
+	return sanPham, nil
 }
 
 func (s *traCuuAdminService) GetSanPhamByTrangThai(trangThai string) ([]models.SanPham, error) {
 	if strings.TrimSpace(trangThai) == "" {
-		return nil, errors.New("sản phẩm không tồn tại")  // Hoặc trả về lỗi tùy theo yêu cầu
+		return nil, errors.New("trạng thái không tồn tại")  
 	}
-	return s.repo.GetSanPhamByTrangThai(trangThai)
+	if trangThai != "Đã bán" && trangThai != "Chưa bán" && trangThai == "Chờ duyệt" {
+		return nil, errors.New("trạng thái không hợp lệ")  
+	}
+	var sanPhams, err = s.repo.GetSanPhamByTrangThai(trangThai)
+	if err != nil {
+		return nil, errors.New("không có sản phẩm nào với trạng thái này")
+	}
+	return sanPhams, nil
 }

@@ -108,6 +108,9 @@ func (h *HangHandler) GetHangByName(c *gin.Context) {
         c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
         return
     }
-
+    if len(hangs) == 0 {
+        c.JSON(http.StatusNotFound, gin.H{"error": "Không tìm thấy hãng nào với tên đã cho"})
+        return
+    }
     c.JSON(http.StatusOK, hangs)
 }

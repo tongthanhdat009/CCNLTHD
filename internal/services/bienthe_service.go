@@ -74,6 +74,11 @@ func (s *BienTheSvc) CreateBienTheTheoMaHangHoa(bienThe *models.BienThe) error {
     }
 
     bienThe.Size = strconv.FormatFloat(sizeFloat, 'f', -1, 64)
+    
+    // Kiểm tra Gia không nhỏ hơn 0
+    if bienThe.Gia < 0 {
+        return errors.New("giá không được nhỏ hơn 0")
+    }
 
     existsBienThe, err := s.repo.ExistsBienTheByHangHoaAndSize(bienThe.MaHangHoa, bienThe.Size)
     if err != nil {
@@ -83,10 +88,6 @@ func (s *BienTheSvc) CreateBienTheTheoMaHangHoa(bienThe *models.BienThe) error {
         return errors.New("biến thể đã tồn tại")
     }
 
-    // Kiểm tra Gia không nhỏ hơn 0
-    if bienThe.Gia < 0 {
-        return errors.New("giá không được nhỏ hơn 0")
-    }
 
 
     return s.repo.CreateBienTheTheoMaHangHoa(bienThe)
