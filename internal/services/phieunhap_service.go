@@ -164,8 +164,15 @@ func (s *quanLyPhieuNhapService) DeleteChiTietByPhieuNhap(maPhieuNhap int, maChi
         return errors.New("phiếu nhập không tồn tại")
     }
     if exists.TrangThai == "Đã duyệt" {
-        return errors.New("không thể xóa chi tiết phiếu nhập đã duyệt")
+        return errors.New("không thể xóa chi tiết phiếu nhập trong phiếu nhập đã duyệt")
     }
+    existsChiTiet, err := s.phieuNhapRepo.ExistsChiTietPhieuNhap(maChiTietPhieuNhap, maPhieuNhap)
+    if err != nil {
+        return err
+    }
+    if !existsChiTiet {
+        return errors.New("chi tiết phiếu nhập không tồn tại")
+    }   
     return s.phieuNhapRepo.DeleteChiTietByPhieuNhap(maPhieuNhap, maChiTietPhieuNhap)
 }
 

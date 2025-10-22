@@ -98,6 +98,9 @@ func main() {
 	quyenService := services.NewQuyenService(quyenRepo)
 	quyenHandler := handlers.NewQuyenHandler(quyenService)
 
+	phanQuyenRepo := repositories.NewPhanQuyenRepository(database)
+	phanQuyenService := services.NewPhanQuyenService(phanQuyenRepo)
+	phanQuyenHandler := handlers.NewPhanQuyenHandler(phanQuyenService)
 
 	// --- Thiết lập server ---
 	r := gin.Default()
@@ -118,7 +121,8 @@ func main() {
 		timKiemHangHoaHandler,
 		bienTheHandler,
 		phieuNhapHandler,
-		quyenHandler)
+		quyenHandler,
+		phanQuyenHandler)
 
 	log.Println("Starting server on :8080")
 	if err := r.Run(":8080"); err != nil {

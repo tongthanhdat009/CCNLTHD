@@ -43,7 +43,7 @@ func (s *hangHoaService) CreateHangHoa(hangHoa *models.HangHoa) error {
         hangHoa.MaHang == 0 ||
         hangHoa.MaDanhMuc == 0 ||
         hangHoa.Mau == ""{
-        return errors.New("tên hàng hóa, mã hãng, mã danh mục, màu sắc và ảnh đại diện không được để trống")
+        return errors.New("tên hàng hóa, mã hãng, mã danh mục, màu sắc không được để trống")
     }
 
     // Kiểm tra mã hãng có tồn tại không
@@ -73,6 +73,10 @@ func (s *hangHoaService) CreateHangHoa(hangHoa *models.HangHoa) error {
         if !exists {
             return errors.New("mã khuyến mãi không tồn tại")
         }
+    }
+
+    if hangHoa.AnhDaiDien == "" {
+        hangHoa.AnhDaiDien = "no-product.png"
     }
 
     return s.repo.CreateHangHoa(hangHoa)
