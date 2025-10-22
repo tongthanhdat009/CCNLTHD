@@ -7,7 +7,7 @@ import (
 )
 
 type HangHoaService interface {
-    GetAllHangHoa() ([]models.HangHoa, error)
+    GetAllHangHoa(limit, offset int) ([]models.HangHoa, error)
     CreateHangHoa(hangHoa *models.HangHoa) error
     UpdateHangHoa(hangHoa *models.HangHoa) error
     SearchHangHoa(
@@ -33,8 +33,8 @@ func (s *hangHoaService) GetHangHoaByID(maHangHoa int) (*models.HangHoa, error) 
     return s.repo.GetHangHoaByID(maHangHoa)
 }
 
-func (s *hangHoaService) GetAllHangHoa() ([]models.HangHoa, error) {
-    return s.repo.GetAll()
+func (s *hangHoaService) GetAllHangHoa(limit, offset int) ([]models.HangHoa, error) {
+    return s.repo.GetAll(limit, offset)
 }
 
 func (s *hangHoaService) CreateHangHoa(hangHoa *models.HangHoa) error {

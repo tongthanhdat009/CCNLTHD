@@ -6,7 +6,7 @@ import (
 )
 
 type HangHoaRepository interface {
-    GetAll() ([]models.HangHoa, error)
+    GetAll(limit, offset int) ([]models.HangHoa, error)
     CreateHangHoa(hangHoa *models.HangHoa) error
     UpdateHangHoa(hangHoa *models.HangHoa) error
     SearchHangHoa(
@@ -41,9 +41,9 @@ func (r *hangHoaRepo) GetHangHoaByID(maHangHoa int) (*models.HangHoa, error) {
     return &hangHoa, nil
 }
 
-func (r *hangHoaRepo) GetAll() ([]models.HangHoa, error) {
+func (r *hangHoaRepo) GetAll(limit, offset int) ([]models.HangHoa, error) {
     var hangHoas []models.HangHoa
-    err := r.db.Preload("Hang").Preload("DanhMuc").Preload("BienThes").Find(&hangHoas).Error
+    err := r.db.Preload("Hang").Preload("DanhMuc").Preload("BienThes").Limit(limit).Offset(offset).Find(&hangHoas).Error
     return hangHoas, err
 }
 

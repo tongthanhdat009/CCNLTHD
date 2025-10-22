@@ -27,7 +27,11 @@ func NewHangHoaHandler(service services.HangHoaService) *HangHoaHandler {
 }
 
 func (h *HangHoaHandler) GetAllHangHoa(c *gin.Context) {
-    hangHoas, err := h.service.GetAllHangHoa()
+    limitStr := c.DefaultQuery("limit","3") //số bảng ghi cần lấy
+    offsetStr := c.DefaultQuery("offset","0") //bắt đầu từ bảng ghi thứ bao nhiêu
+    limit, _ := strconv.Atoi(limitStr)
+    offset, _ := strconv.Atoi(offsetStr)
+    hangHoas, err := h.service.GetAllHangHoa(limit, offset)
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not fetch products"})
         return
