@@ -91,6 +91,10 @@ func main() {
 	adminReviewRepo := repositories.NewAdminReviewRepository(database)
 	adminReviewSvc := services.NewAdminReviewService(adminReviewRepo)
 	adminReviewHdl := handlers.NewAdminReviewHandler(adminReviewSvc)
+	//thống kê
+	reportRepo := repositories.NewReportRepository(database)
+	reportSvc := services.NewReportService(reportRepo)
+	reportHdl := handlers.NewReportHandler(reportSvc)
 	// --- Thiết lập server ---
 	r := gin.Default()
 	r.Static("/AnhHangHoa", "./static/AnhHangHoa")
@@ -110,6 +114,7 @@ func main() {
 		timKiemSanPhamHandler,
 		reviewHdl,
 		adminReviewHdl,
+		reportHdl,
 	)
 
 	log.Println("Starting server on :8080")

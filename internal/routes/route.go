@@ -22,6 +22,7 @@ func SetupRoutes(r *gin.Engine,
 	timKiemSanPhamHandler *handlers.TimKiemSanPhamHandler,
 	reviewHandler *handlers.ReviewHandler,
 	adminReviewHandler *handlers.AdminReviewHandler,
+	reportHandler *handlers.ReportHandler,
 ) {
 	// Các route không cần xác thực
 
@@ -141,6 +142,38 @@ func SetupRoutes(r *gin.Engine,
 			admin.DELETE("/:id",
 				permissionMiddleware.Require("Quản lý đánh giá", "Xử lý"),
 				adminReviewHandler.Delete,
+			)
+		}
+		//routes thống kê báo cáo
+		reports := api.Group("/reports")
+		{
+			reports.GET("/top-customers",
+				permissionMiddleware.Require("Thống kê & báo cáo", "Xem"),
+				reportHandler.TopCustomers,
+			)
+			reports.GET("/purchase-value",
+				permissionMiddleware.Require("Thống kê & báo cáo", "Xem"),
+				reportHandler.PurchaseValue,
+			)
+			reports.GET("/imported-products",
+				permissionMiddleware.Require("Thống kê & báo cáo", "Xem"),
+				reportHandler.ImportedProducts,
+			)
+			reports.GET("/imported-brands",
+				permissionMiddleware.Require("Thống kê & báo cáo", "Xem"),
+				reportHandler.ImportedBrands,
+			)
+			reports.GET("/invoices",
+				permissionMiddleware.Require("Thống kê & báo cáo", "Xem"),
+				reportHandler.Invoices,
+			)
+			reports.GET("/best-sellers",
+				permissionMiddleware.Require("Thống kê & báo cáo", "Xem"),
+				reportHandler.BestSellers,
+			)
+			reports.GET("/revenue-by-brand",
+				permissionMiddleware.Require("Thống kê & báo cáo", "Xem"),
+				reportHandler.RevenueByBrand,
 			)
 		}
 
