@@ -95,6 +95,11 @@ func main() {
 	reportRepo := repositories.NewReportRepository(database)
 	reportSvc := services.NewReportService(reportRepo)
 	reportHdl := handlers.NewReportHandler(reportSvc)
+	//lịch sử đặt hàng
+	orderHistoryRepo := repositories.NewOrderHistoryRepository(database)
+	orderHistorySvc := services.NewOrderHistoryService(orderHistoryRepo)
+	orderHistoryHdl := handlers.NewOrderHistoryHandler(orderHistorySvc)
+
 	// --- Thiết lập server ---
 	r := gin.Default()
 	r.Static("/AnhHangHoa", "./static/AnhHangHoa")
@@ -115,7 +120,11 @@ func main() {
 		reviewHdl,
 		adminReviewHdl,
 		reportHdl,
+		orderHistoryHdl,
 	)
+	for _, ri := range r.Routes() {
+		log.Println(ri.Method, ri.Path)
+	}
 
 	log.Println("Starting server on :8080")
 	if err := r.Run(":8080"); err != nil {

@@ -23,6 +23,7 @@ func SetupRoutes(r *gin.Engine,
 	reviewHandler *handlers.ReviewHandler,
 	adminReviewHandler *handlers.AdminReviewHandler,
 	reportHandler *handlers.ReportHandler,
+	orderHistoryHandler *handlers.OrderHistoryHandler,
 ) {
 	// Các route không cần xác thực
 
@@ -175,6 +176,12 @@ func SetupRoutes(r *gin.Engine,
 				permissionMiddleware.Require("Thống kê & báo cáo", "Xem"),
 				reportHandler.RevenueByBrand,
 			)
+		}
+		// Routes cho Lịch sử Đặt Hàng
+		orders := api.Group("/orders")
+		{
+			orders.GET("/me", orderHistoryHandler.ListMine)
+			orders.GET("/:id", orderHistoryHandler.GetDetail)
 		}
 
 	}
