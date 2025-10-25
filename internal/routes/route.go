@@ -8,22 +8,22 @@ import (
 
 // SetupRoutes định nghĩa tất cả các route cho ứng dụng.
 func SetupRoutes(r *gin.Engine,
-			hangHoaHandler *handlers.HangHoaHandler,
-	 	 	donHangHandler *handlers.DonHangHandler,
-	   		nguoiDungHandler *handlers.NguoiDungHandler,
-	    	hangHandler *handlers.HangHandler,
-		 	nhaCungCap *handlers.NhaCungCapHandler,
-		  	dangKyHandler *handlers.DangKyHandler,
-		   	dangNhapHandler *handlers.DangNhapHandler,
-			permissionMiddleware *middleware.PermissionMiddleware,
-			gioHangHandler *handlers.GioHangHandler,
-			khuyenMaiHandler *handlers.KhuyenMaiHandler,
-			traCuuAdminHandler *handlers.TraCuuAdminHandler,
-			timKiemHangHoaHandler *handlers.TimKiemHangHoaHandler,
-			bienTheHandler *handlers.QuanLyBienTheHandler,
-			phieuNhapHandler *handlers.QuanLyPhieuNhapHandler,
-			quyenHandler *handlers.QuyenHandler,
-			phanQuyenHandler *handlers.PhanQuyenHandler) {
+	hangHoaHandler *handlers.HangHoaHandler,
+	donHangHandler *handlers.DonHangHandler,
+	nguoiDungHandler *handlers.NguoiDungHandler,
+	hangHandler *handlers.HangHandler,
+	nhaCungCap *handlers.NhaCungCapHandler,
+	dangKyHandler *handlers.DangKyHandler,
+	dangNhapHandler *handlers.DangNhapHandler,
+	permissionMiddleware *middleware.PermissionMiddleware,
+	gioHangHandler *handlers.GioHangHandler,
+	khuyenMaiHandler *handlers.KhuyenMaiHandler,
+	traCuuAdminHandler *handlers.TraCuuAdminHandler,
+	timKiemHangHoaHandler *handlers.TimKiemHangHoaHandler,
+	bienTheHandler *handlers.QuanLyBienTheHandler,
+	phieuNhapHandler *handlers.QuanLyPhieuNhapHandler,
+	quyenHandler *handlers.QuyenHandler,
+	phanQuyenHandler *handlers.PhanQuyenHandler) {
 	// Các route không cần xác thực
 
 	r.POST("/api/dangky", dangKyHandler.CreateNguoiDung)
@@ -62,7 +62,7 @@ func SetupRoutes(r *gin.Engine,
 			donHangRoutes.POST("", donHangHandler.CreateDonHang)
 
 			// Cập nhật đơn hàng (chỉ admin hoặc user sở hữu đơn hàng)
-			donHangRoutes.PUT("/:id", permissionMiddleware.Require("Quản lý đơn hàng", "Sửa"), donHangHandler.UpdateDonHang)
+			donHangRoutes.PUT("/:id", donHangHandler.UpdateDonHang)
 
 			// Xóa đơn hàng (chỉ admin)
 			donHangRoutes.DELETE("/:id", permissionMiddleware.Require("Quản lý đơn hàng", "Xóa"), donHangHandler.DeleteDonHang)
@@ -91,10 +91,19 @@ func SetupRoutes(r *gin.Engine,
 		// Routes cho Giỏ Hàng
 		gioHangRoutes := api.Group("/giohang")
 		{
+			// Lấy giỏ hàng của user hiện tại
+			gioHangRoutes.GET("", gioHangHandler.GetAll)
+
+			// Thêm sản phẩm vào giỏ hàng
 			gioHangRoutes.POST("", gioHangHandler.TaoGioHang)
+
+			// Cập nhật số lượng sản phẩm trong giỏ
 			gioHangRoutes.PUT("", gioHangHandler.SuaGioHang)
+
+			// Xóa sản phẩm khỏi giỏ hàng
 			gioHangRoutes.DELETE("", gioHangHandler.XoaGioHang)
-			gioHangRoutes.GET("/:id", gioHangHandler.GetAll)
+
+			// Thanh toán giỏ hàng
 			gioHangRoutes.POST("/thanhtoan", gioHangHandler.ThanhToan)
 		}
 

@@ -258,46 +258,52 @@ func (h *DonHangHandler) CancelOrder(c *gin.Context) {
 // SearchDonHang - Tìm kiếm đơn hàng
 // GET /api/donhang/search
 func (h *DonHangHandler) SearchDonHang(c *gin.Context) {
+	// Lấy các tham số từ query string
 	keyword := c.Query("keyword")
-	trangThai := c.Query("trang_thai")
-	fromDateStr := c.Query("from_date")
-	toDateStr := c.Query("to_date")
+	trangThai := c.Query("trangThai")
+	fromDateStr := c.Query("fromDate")
+	toDateStr := c.Query("toDate")
 
+	// Parse thời gian
 	var fromDate, toDate time.Time
 	var err error
 
 	if fromDateStr != "" {
-		fromDate, err = time.Parse("2006-01-02", fromDateStr)
+		fromDate, err = time.Parse(time.RFC3339, fromDateStr)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "Định dạng ngày bắt đầu không hợp lệ (YYYY-MM-DD)",
-			})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Định dạng fromDate không hợp lệ. Sử dụng RFC3339: 2025-10-01T00:00:00Z"})
 			return
 		}
 	}
 
 	if toDateStr != "" {
-		toDate, err = time.Parse("2006-01-02", toDateStr)
+		toDate, err = time.Parse(time.RFC3339, toDateStr)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "Định dạng ngày kết thúc không hợp lệ (YYYY-MM-DD)",
-			})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Định dạng toDate không hợp lệ. Sử dụng RFC3339: 2025-10-31T23:59:59Z"})
 			return
 		}
 	}
 
+	// Gọi service để tìm kiếm
 	donHangs, err := h.service.SearchDonHang(keyword, trangThai, fromDate, toDate)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error":   "Không thể tìm kiếm đơn hàng",
-			"details": err.Error(),
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if len(donHangs) == 0 {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "Không tìm thấy đơn hàng nào",
+			"data":    []models.DonHang{},
+			"total":   0,
 		})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"data":  donHangs,
-		"total": len(donHangs),
+		"message": "Tìm kiếm đơn hàng thành công",
+		"data":    donHangs,
+		"total":   len(donHangs),
 	})
 }
 

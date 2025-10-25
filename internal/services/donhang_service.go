@@ -53,7 +53,7 @@ func (s *donHangService) CreateDonHang(donHang *models.DonHang) error {
 	if donHang.TrangThai == "" {
 		donHang.TrangThai = "Chờ xác nhận"
 	}
-	
+
 	// Tạo đơn hàng
 	return s.repo.CreateDonHang(donHang)
 }
@@ -91,11 +91,34 @@ func (s *donHangService) UpdateDonHang(donHang *models.DonHang) error {
 		return errors.New("không thể sửa đổi đơn hàng ở trạng thái hiện tại")
 	}
 
-	// Validate dữ liệu
-	if err := s.ValidateOrderData(donHang); err != nil {
+	// Lấy thông tin đơn hàng cũ để giữ nguyên MaNguoiDung
+	oldOrder, err := s.repo.GetByID(donHang.MaDonHang)
+	if err != nil {
 		return err
 	}
 
+	// Giữ nguyên MaNguoiDung và NgayTao
+	donHang.MaNguoiDung = oldOrder.MaNguoiDung
+	donHang.NgayTao = oldOrder.NgayTao
+
+	// Validate các trường khác (không validate MaNguoiDung)
+	if donHang.TongTien < 0 {
+		return errors.New("tổng tiền không hợp lệ")
+	}
+
+	validPaymentMethods := []string{"Tiền mặt", "Chuyển khoản", "Ví điện tử", "Thẻ tín dụng", "COD"}
+	isValidPayment := false
+	for _, method := range validPaymentMethods {
+		if donHang.PhuongThucThanhToan == method {
+			isValidPayment = true
+			break
+		}
+	}
+	if !isValidPayment {
+		return errors.New("phương thức thanh toán không hợp lệ")
+	}
+
+	// Cập nhật đơn hàng
 	return s.repo.UpdateDonHang(donHang)
 }
 
@@ -124,7 +147,6 @@ func (s *donHangService) DeleteDonHang(maDonHang int) error {
 	return s.repo.DeleteDonHang(maDonHang)
 }
 
-// ApproveOrder - Duyệt đơn hàng (Chờ xác nhận -> Đã xác nhận)
 func (s *donHangService) ApproveOrder(maDonHang int) error {
 	// Kiểm tra đơn hàng có tồn tại không
 	exists, err := s.repo.ExistsDonHang(maDonHang)
@@ -135,18 +157,19 @@ func (s *donHangService) ApproveOrder(maDonHang int) error {
 		return errors.New("đơn hàng không tồn tại")
 	}
 
-	// Kiểm tra trạng thái hiện tại
+	// Lấy trạng thái hiện tại
 	currentStatus, err := s.repo.GetCurrentStatus(maDonHang)
 	if err != nil {
 		return err
 	}
 
+	// Chỉ có thể duyệt đơn hàng ở trạng thái "Chờ xác nhận"
 	if currentStatus != "Chờ xác nhận" {
 		return errors.New("chỉ có thể duyệt đơn hàng ở trạng thái 'Chờ xác nhận'")
 	}
 
-	// Cập nhật trạng thái
-	return s.repo.UpdateStatus(maDonHang, "Đã xác nhận")
+	// Cập nhật trạng thái sang "Đang giao hàng"
+	return s.repo.UpdateStatus(maDonHang, "Đang giao hàng")
 }
 
 // UpdateOrderStatus - Cập nhật trạng thái đơn hàng
@@ -251,48 +274,46 @@ func (s *donHangService) GetDetailByID(maDonHang int) (models.DonHang, error) {
 	return s.repo.GetDetailByID(maDonHang)
 }
 
-// ValidateOrderData - Validate dữ liệu đơn hàng
 func (s *donHangService) ValidateOrderData(donHang *models.DonHang) error {
+	// Validate mã người dùng
 	if donHang.MaNguoiDung <= 0 {
 		return errors.New("mã người dùng không hợp lệ")
 	}
 
+	// Validate tổng tiền
 	if donHang.TongTien < 0 {
 		return errors.New("tổng tiền không hợp lệ")
 	}
 
-	if donHang.TinhThanh == "" {
-		return errors.New("tỉnh/thành không được để trống")
-	}
-
-	if donHang.QuanHuyen == "" {
-		return errors.New("quận/huyện không được để trống")
-	}
-
-	if donHang.PhuongXa == "" {
-		return errors.New("phường/xã không được để trống")
-	}
-
-	if donHang.DuongSoNha == "" {
-		return errors.New("địa chỉ không được để trống")
-	}
-
-	if donHang.PhuongThucThanhToan == "" {
-		return errors.New("phương thức thanh toán không được để trống")
-	}
+	// Validate địa chỉ (có thể bỏ qua nếu không bắt buộc)
+	// if donHang.TinhThanh == "" || donHang.QuanHuyen == "" || donHang.PhuongXa == "" || donHang.DuongSoNha == "" {
+	// 	return errors.New("địa chỉ không đầy đủ")
+	// }
 
 	// Validate phương thức thanh toán
-	validPaymentMethods := []string{"Tiền mặt", "Chuyển khoản", "Ví điện tử", "Thẻ tín dụng"}
+	validPaymentMethods := []string{"Tiền mặt", "Chuyển khoản", "Ví điện tử", "Thẻ tín dụng", "COD"}
 	isValidPayment := false
 	for _, method := range validPaymentMethods {
-		if method == donHang.PhuongThucThanhToan {
+		if donHang.PhuongThucThanhToan == method {
 			isValidPayment = true
 			break
 		}
 	}
-
 	if !isValidPayment {
 		return errors.New("phương thức thanh toán không hợp lệ")
+	}
+
+	// Validate trạng thái
+	validStatuses := []string{"Chờ xác nhận", "Đang giao hàng", "Đã giao hàng", "Hoàn thành", "Đã hủy", "Giao hàng thất bại"}
+	isValidStatus := false
+	for _, status := range validStatuses {
+		if donHang.TrangThai == status {
+			isValidStatus = true
+			break
+		}
+	}
+	if !isValidStatus && donHang.TrangThai != "" {
+		return errors.New("trạng thái không hợp lệ")
 	}
 
 	return nil

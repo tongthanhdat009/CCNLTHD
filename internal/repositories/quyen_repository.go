@@ -15,6 +15,12 @@ type QuyenRepository interface {
 	PhanQuyen(maQuyen int, chiTietChucNangs []models.ChiTietChucNang) error
 	CreateQuyenWithPermissions(tenQuyen string, maChiTietChucNangs []int) (models.Quyen, error)
 	GetChucNangVaChiTiet(idQuyen int) ([]models.ChucNang, error)
+	UpdateQuyen(quyen *models.Quyen) error
+	DeleteQuyen(maQuyen int) error
+	CheckQuyenExistsByName(tenQuyen string) (bool, error)
+	CheckQuyenExists(maQuyen int) (bool, error)
+	CheckQuyenHasNguoiDung(maQuyen int) (bool, error)
+	DeletePhanQuyenByMaQuyen(maQuyen int) error
 }
 
 type QuyenRepo struct {
@@ -98,7 +104,19 @@ func (r *QuyenRepo) PhanQuyen(maQuyen int, chiTietChucNangs []models.ChiTietChuc
 	return nil
 }
 
-func (r *QuyenRepo) CheckQuyenExists(tenQuyen string) (bool, error) {
+func (r *QuyenRepo) CheckQuyenExists(maQuyen int) (bool, error) {
+	var count int64
+	err := r.db.Model(&models.Quyen{}).
+		Where("MaQuyen = ?", maQuyen).
+		Count(&count).Error
+
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
+
+func (r *QuyenRepo) CheckQuyenExistsByName(tenQuyen string) (bool, error) {
 	var count int64
 	err := r.db.Model(&models.Quyen{}).
 		Where("TenQuyen = ?", tenQuyen).
@@ -112,8 +130,8 @@ func (r *QuyenRepo) CheckQuyenExists(tenQuyen string) (bool, error) {
 
 // CreateQuyenWithPermissions - Tạo quyền mới kèm phân quyền chi tiết
 func (r *QuyenRepo) CreateQuyenWithPermissions(tenQuyen string, maChiTietChucNangs []int) (models.Quyen, error) {
-	// 1. Kiểm tra quyền đã tồn tại chưa
-	exists, err := r.CheckQuyenExists(tenQuyen)
+	// 1. Kiểm tra quyền đã tồn tại chưa (theo tên)
+	exists, err := r.CheckQuyenExistsByName(tenQuyen)
 	if err != nil {
 		return models.Quyen{}, err
 	}
@@ -180,4 +198,56 @@ func (r *QuyenRepo) CreateQuyenWithPermissions(tenQuyen string, maChiTietChucNan
 	}
 
 	return quyen, nil
+}
+
+func (r *QuyenRepo) UpdateQuyen(quyen *models.Quyen) error {
+	result := r.db.Model(&models.Quyen{}).
+		Where("MaQuyen = ?", quyen.MaQuyen).
+		Updates(map[string]interface{}{
+			"TenQuyen": quyen.TenQuyen,
+		})
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return errors.New("không tìm thấy quyền để cập nhật")
+	}
+
+	return nil
+}
+
+// DeleteQuyen - Xóa quyền (cascade xóa phân quyền liên quan)
+func (r *QuyenRepo) DeleteQuyen(maQuyen int) error {
+	result := r.db.Where("MaQuyen = ?", maQuyen).Delete(&models.Quyen{})
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return errors.New("không tìm thấy quyền để xóa")
+	}
+
+	return nil
+}
+
+// CheckQuyenHasNguoiDung - Kiểm tra quyền có người dùng đang sử dụng không
+func (r *QuyenRepo) CheckQuyenHasNguoiDung(maQuyen int) (bool, error) {
+	var count int64
+	err := r.db.Table("nguoidung").
+		Where("MaQuyen = ?", maQuyen).
+		Count(&count).Error
+
+	if err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
+}
+
+// DeletePhanQuyenByMaQuyen - Xóa tất cả phân quyền của một quyền
+func (r *QuyenRepo) DeletePhanQuyenByMaQuyen(maQuyen int) error {
+	return r.db.Where("MaQuyen = ?", maQuyen).Delete(&models.PhanQuyen{}).Error
 }

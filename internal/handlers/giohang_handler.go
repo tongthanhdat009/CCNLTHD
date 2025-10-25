@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/tongthanhdat009/CCNLTHD/internal/models"
@@ -61,42 +60,66 @@ func (h *GioHangHandler) XoaGioHang(c *gin.Context) {
 }
 
 func (h *GioHangHandler) GetAll(c *gin.Context) {
-	// Lấy manguoidung từ URL parameter hoặc query parameter
-	manguoidungStr := c.Param("id")
-
-	if manguoidungStr == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Thiếu mã người dùng"})
+	// Lấy mã người dùng từ context (đã được set bởi AuthMiddleware)
+	// AuthMiddleware set claim "ma_nguoi_dung" vào context
+	maNguoiDungInterface, exists := c.Get("ma_nguoi_dung")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 
-	// Chuyển string thành int
+	// Convert sang int
 	var manguoidung int
-	if _, err := fmt.Sscanf(manguoidungStr, "%d", &manguoidung); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Mã người dùng không hợp lệ"})
+	switch v := maNguoiDungInterface.(type) {
+	case float64:
+		manguoidung = int(v)
+	case int:
+		manguoidung = v
+	default:
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user ID format"})
 		return
 	}
 
+	// Lấy giỏ hàng
 	giohangs, err := h.service.GetAll(manguoidung)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Không thể lấy danh sách giỏ hàng"})
 		return
 	}
 
+	// Tính tổng tiền từ danh sách giỏ hàng
+	var tongTien float64
+	for _, item := range giohangs {
+		tongTien += item.Gia * float64(item.SoLuong)
+	}
+
+	// Kiểm tra giỏ hàng trống
+	if len(giohangs) == 0 {
+		c.JSON(http.StatusOK, gin.H{
+			"message":   "Giỏ hàng trống",
+			"data":      []models.GioHang{},
+			"tong_tien": 0,
+		})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Lấy danh sách giỏ hàng thành công",
-		"data":    giohangs,
+		"message":   "Lấy danh sách giỏ hàng thành công",
+		"data":      giohangs,
+		"tong_tien": tongTien,
 	})
 }
+
 func (h *GioHangHandler) ThanhToan(c *gin.Context) {
 	var req struct {
-		GioHang    []models.GioHang `json:"giohang"`
-		MaNguoiDung int             `json:"ma_nguoi_dung"`
-		TinhThanh           string    `json:"tinh_thanh"`
-		QuanHuyen           string    `json:"quan_huyen"`
-		PhuongXa            string    `json:"phuong_xa"`
-		DuongSoNha          string    `json:"duong_so_nha"`
-		SoDienThoai        string    `json:"so_dien_thoai"`
-		PhuongThucThanhToan string    `json:"phuong_thuc_thanh_toan"`
+		GioHang             []models.GioHang `json:"giohang"`
+		MaNguoiDung         int              `json:"ma_nguoi_dung"`
+		TinhThanh           string           `json:"tinh_thanh"`
+		QuanHuyen           string           `json:"quan_huyen"`
+		PhuongXa            string           `json:"phuong_xa"`
+		DuongSoNha          string           `json:"duong_so_nha"`
+		SoDienThoai         string           `json:"so_dien_thoai"`
+		PhuongThucThanhToan string           `json:"phuong_thuc_thanh_toan"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
