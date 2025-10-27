@@ -16,19 +16,19 @@ type HangHoa struct {
 	// --- Định nghĩa các mối quan hệ ---
 	Hang      Hang      `gorm:"foreignKey:MaHang" json:"hang,omitempty"`
 	DanhMuc   DanhMuc   `gorm:"foreignKey:MaDanhMuc" json:"danh_muc,omitempty"`
-	KhuyenMai KhuyenMai `gorm:"foreignKey:MaKhuyenMai" json:"khuyen_mai,omitempty"`
+	KhuyenMai *KhuyenMai `gorm:"foreignKey:MaKhuyenMai" json:"khuyen_mai,omitempty"`
 	BienThes  []BienThe `gorm:"foreignKey:MaHangHoa" json:"bien_thes,omitempty"`
 }
 
 type BienThe struct {
     MaBienThe  int     `gorm:"primaryKey;column:MaBienThe" json:"ma_bien_the"`
     MaHangHoa  int     `gorm:"column:MaHangHoa" json:"ma_hang_hoa"`
-    Size       string  `gorm:"column:Size" json:"size"`
+    Size       int  `gorm:"column:Size" json:"size"`
     Gia        float64 `gorm:"column:Gia" json:"gia"`
     SoLuongTon int     `gorm:"column:SoLuongTon" json:"so_luong_ton"`
     TrangThai  string  `gorm:"column:TrangThai" json:"trang_thai"`
 
-    HangHoa HangHoa `gorm:"foreignKey:MaHangHoa" json:"hang_hoa,omitempty"`
+    HangHoa *HangHoa `gorm:"foreignKey:MaHangHoa" json:"hang_hoa,omitempty"`
 }
 
 type DanhMuc struct {

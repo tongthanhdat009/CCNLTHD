@@ -13,7 +13,7 @@ type BienTheRepository interface {
     UpdateBienTheStatus(maBienThe int, trangThai string) error
     DeleteBienThe(maBienThe int) error
     ExistsHangHoa(maHangHoa int) (bool, error)
-    ExistsBienTheByHangHoaAndSize(maHangHoa int, size string) (bool, error)
+    ExistsBienTheByHangHoaAndSize(maHangHoa int, size int) (bool, error)
     HasChiTietPhieuNhap(maBienThe int) (bool, error)
 
 }
@@ -82,7 +82,7 @@ func (r *BienTheRepo) ExistsHangHoa(maHangHoa int) (bool, error) {
     return count > 0, err
 }
 
-func (r *BienTheRepo) ExistsBienTheByHangHoaAndSize(maHangHoa int, size string) (bool, error) {
+func (r *BienTheRepo) ExistsBienTheByHangHoaAndSize(maHangHoa int, size int) (bool, error) {
     var count int64
     err := r.db.Model(&models.BienThe{}).Where("MaHangHoa = ? AND Size = ?", maHangHoa, size).Count(&count).Error
     return count > 0, err

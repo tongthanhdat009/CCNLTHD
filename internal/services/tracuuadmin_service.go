@@ -38,7 +38,7 @@ func (s *traCuuAdminService) GetSanPhamByTrangThai(trangThai string) ([]models.S
 	if strings.TrimSpace(trangThai) == "" {
 		return nil, errors.New("trạng thái không tồn tại")  
 	}
-	if trangThai != "Đã bán" && trangThai != "Chưa bán" && trangThai == "Chờ duyệt" {
+	if trangThai != "Đã bán" && trangThai != "Chưa bán" && trangThai != "Chờ duyệt" {
 		return nil, errors.New("trạng thái không hợp lệ")  
 	}
 	var sanPhams, err = s.repo.GetSanPhamByTrangThai(trangThai)

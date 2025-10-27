@@ -2,7 +2,6 @@ package services
 
 import (
 	"errors"
-	"strconv"
 
 	"github.com/tongthanhdat009/CCNLTHD/internal/models"
 	"github.com/tongthanhdat009/CCNLTHD/internal/repositories"
@@ -64,17 +63,10 @@ func (s *BienTheSvc) CreateBienTheTheoMaHangHoa(bienThe *models.BienThe) error {
 
     bienThe.TrangThai = "DangBan"
 
-    sizeFloat, err := strconv.ParseFloat(bienThe.Size, 64)
-    if err != nil {
-        return errors.New("size phải là số")
-    }
-
-    if sizeFloat <= 0 {
+    if bienThe.Size <= 0 {
         return errors.New("size phải lớn hơn 0")
     }
 
-    bienThe.Size = strconv.FormatFloat(sizeFloat, 'f', -1, 64)
-    
     // Kiểm tra Gia không nhỏ hơn 0
     if bienThe.Gia < 0 {
         return errors.New("giá không được nhỏ hơn 0")
@@ -88,8 +80,6 @@ func (s *BienTheSvc) CreateBienTheTheoMaHangHoa(bienThe *models.BienThe) error {
         return errors.New("biến thể đã tồn tại")
     }
 
-
-
     return s.repo.CreateBienTheTheoMaHangHoa(bienThe)
 }
 
@@ -102,14 +92,19 @@ func (s *BienTheSvc) UpdateBienTheInfo(bienThe *models.BienThe) error {
     if !exists {
         return errors.New("mã hàng hóa không tồn tại")
     }
-
-    sizeFloat, err := strconv.ParseFloat(bienThe.Size, 64)
+    
+    // kiểm tra tồn tại biến thể
+    existsBienThe, err := s.repo.GetBienTheTheoMa(bienThe.MaBienThe)
     if err != nil {
-        return errors.New("size phải là số")
+        return errors.New("biến thể không tồn tại")
     }
-    if sizeFloat <= 0 {
+
+    if bienThe.Size <= 0 {
         return errors.New("size phải lớn hơn 0")
     }
+
+    bienThe.TrangThai = existsBienThe.TrangThai
+    bienThe.SoLuongTon = existsBienThe.SoLuongTon
 
     // Kiểm tra Gia không nhỏ hơn 0
     if bienThe.Gia < 0 {
