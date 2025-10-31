@@ -3,11 +3,29 @@ package repositories
 import (
 	"context"
 	"fmt"
+	"log"
+	"strings"
 
 	"gorm.io/gorm"
 
 	"github.com/tongthanhdat009/CCNLTHD/internal/models"
 )
+
+func normalizeStatus(input string) (string, error) {
+	s := strings.TrimSpace(strings.ToLower(input))
+	switch s {
+	case "", "all":
+		return "", nil
+	case "pending", "chua_duyet", "chuaduyet", "chưa duyệt":
+		return "Chưa duyệt", nil
+	case "approved", "da_duyet", "daduyet", "đã duyệt":
+		return "Đã duyệt", nil
+	case "rejected", "tu_choi", "tuchoi", "da tu choi", "đã từ chối":
+		return "Đã từ chối", nil
+	default:
+		return "", fmt.Errorf("Trạng thái không hợp lệ")
+	}
+}
 
 // Kết quả trả về khi list (Exported)
 type AdminReviewListResult struct {
@@ -45,8 +63,18 @@ func (r *adminReviewRepository) AdminList(ctx context.Context, f models.AdminRev
 	if f.MaNguoiDung != nil {
 		tx = tx.Where("MaNguoiDung = ?", *f.MaNguoiDung)
 	}
-	if f.TrangThai != nil && *f.TrangThai != "" {
-		tx = tx.Where("TrangThai = ?", *f.TrangThai)
+	if f.TrangThai != nil && strings.TrimSpace(*f.TrangThai) != "" {
+		mapped, err := normalizeStatus(*f.TrangThai)
+		if err != nil {
+			return AdminReviewListResult{}, err
+		}
+		// LOG xem map ra gì
+		log.Printf("[AdminList][repo] inputStatus=%q mapped=%q", *f.TrangThai, mapped)
+
+		if mapped != "" {
+			// So sánh “an toàn”: cắt khoảng trắng + không phân biệt hoa/thường
+			tx = tx.Where("LOWER(TRIM(TrangThai)) = LOWER(TRIM(?))", mapped)
+		}
 	}
 	if f.Q != nil && *f.Q != "" {
 		tx = tx.Where("NoiDung LIKE ?", "%"+*f.Q+"%")
