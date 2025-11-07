@@ -95,7 +95,7 @@ func SetupRoutes(r *gin.Engine,
 			gioHangRoutes.PUT("", gioHangHandler.SuaGioHang)
 			gioHangRoutes.DELETE("", gioHangHandler.XoaGioHang)
 			gioHangRoutes.GET("/:id", gioHangHandler.GetAll)
-			gioHangRoutes.POST("/thanhtoan", gioHangHandler.ThanhToan)
+			gioHangRoutes.POST("/thanhtoan/:id", permissionMiddleware.RequireUserIDMatch(), gioHangHandler.ThanhToan)
 		}
 
 		// Routes cho Khuyến Mãi

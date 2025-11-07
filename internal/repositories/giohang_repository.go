@@ -167,6 +167,9 @@ func (s *GioHangRepo) CheckBienThe(maBienThe int, gia int, soluong int)  error {
 	if err != nil {
 		return fmt.Errorf("không tìm thấy sản phẩm mã biến thể %d", maBienThe)
 	}
+	if bienThe.TrangThai != "DangBan" {
+		return fmt.Errorf("sản phẩm mã biến thể %d không còn bán", maBienThe)
+	}
 	if bienThe.Gia != float64(gia) {
 		return fmt.Errorf("giá sản phẩm mã biến thể %d đã thay đổi (giỏ: %.2f, hiện tại: %.2f)",
 			maBienThe, float64(gia), bienThe.Gia)

@@ -33,6 +33,29 @@ type createNguoiDungRequest struct {
 	MaQuyen     int    `json:"ma_quyen"`
 }
 
+// Payload update người dùng (client gửi string cho các trường nullable)
+type updateNguoiDungRequest struct {
+	HoTen       *string `json:"ho_ten"`
+	Email       *string `json:"email"`
+	SoDienThoai *string `json:"so_dien_thoai"`
+	TinhThanh   *string `json:"tinh_thanh"`
+	QuanHuyen   *string `json:"quan_huyen"`
+	PhuongXa    *string `json:"phuong_xa"`
+	DuongSoNha  *string `json:"duong_so_nha"`
+}
+
+// Payload update người dùng (admin có thể cập nhật cả quyền)
+type updateNguoiDungAdminRequest struct {
+	HoTen       *string `json:"ho_ten"`
+	Email       *string `json:"email"`
+	SoDienThoai *string `json:"so_dien_thoai"`
+	TinhThanh   *string `json:"tinh_thanh"`
+	QuanHuyen   *string `json:"quan_huyen"`
+	PhuongXa    *string `json:"phuong_xa"`
+	DuongSoNha  *string `json:"duong_so_nha"`
+	MaQuyen     *int    `json:"ma_quyen"`
+}
+
 func toNullString(s string) sql.NullString {
 	if s == "" {
 		return sql.NullString{String: "", Valid: false}
@@ -55,15 +78,42 @@ func (h *NguoiDungHandler) UpdateNguoiDung(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
 		return
 	}
-	// Bind dữ liệu update (có thể chỉ một vài trường)
-	var input models.NguoiDung
-
-	if err := c.ShouldBindJSON(&input); err != nil {
+	// Bind dữ liệu update (client gửi string cho các trường địa chỉ, có thể là chuỗi rỗng)
+	var req updateNguoiDungRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	// Lấy dữ liệu hiện tại để chỉ cập nhật các trường có xuất hiện trong JSON
+	current, err := h.service.GetNguoiDungByID(maNguoiDung)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+	nd := *current
+	if req.HoTen != nil {
+		nd.HoTen = *req.HoTen
+	}
+	if req.Email != nil {
+		nd.Email = *req.Email
+	}
+	if req.SoDienThoai != nil {
+		nd.SoDienThoai = *req.SoDienThoai
+	}
+	if req.TinhThanh != nil {
+		nd.TinhThanh = sql.NullString{String: *req.TinhThanh, Valid: true}
+	}
+	if req.QuanHuyen != nil {
+		nd.QuanHuyen = sql.NullString{String: *req.QuanHuyen, Valid: true}
+	}
+	if req.PhuongXa != nil {
+		nd.PhuongXa = sql.NullString{String: *req.PhuongXa, Valid: true}
+	}
+	if req.DuongSoNha != nil {
+		nd.DuongSoNha = sql.NullString{String: *req.DuongSoNha, Valid: true}
+	}
 
-	if err := h.service.UpdateNguoiDung(maNguoiDung, input); err != nil {
+	if err := h.service.UpdateNguoiDung(maNguoiDung, nd); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -93,14 +143,44 @@ func (h *NguoiDungHandler) UpdateNguoiDungAdmin(c *gin.Context) {
 		return
 	}
 
-	var input models.NguoiDung
-
-	if err := c.ShouldBindJSON(&input); err != nil {
+	var req updateNguoiDungAdminRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	// Lấy dữ liệu hiện tại và chỉ cập nhật các trường có xuất hiện
+	current, err := h.service.GetNguoiDungByID(maNguoiDung)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+	nd := *current
+	if req.HoTen != nil {
+		nd.HoTen = *req.HoTen
+	}
+	if req.Email != nil {
+		nd.Email = *req.Email
+	}
+	if req.SoDienThoai != nil {
+		nd.SoDienThoai = *req.SoDienThoai
+	}
+	if req.TinhThanh != nil {
+		nd.TinhThanh = sql.NullString{String: *req.TinhThanh, Valid: true}
+	}
+	if req.QuanHuyen != nil {
+		nd.QuanHuyen = sql.NullString{String: *req.QuanHuyen, Valid: true}
+	}
+	if req.PhuongXa != nil {
+		nd.PhuongXa = sql.NullString{String: *req.PhuongXa, Valid: true}
+	}
+	if req.DuongSoNha != nil {
+		nd.DuongSoNha = sql.NullString{String: *req.DuongSoNha, Valid: true}
+	}
+	if req.MaQuyen != nil {
+		nd.MaQuyen = *req.MaQuyen
+	}
 
-	if err := h.service.UpdateNguoiDungAdmin(maNguoiDung, input); err != nil {
+	if err := h.service.UpdateNguoiDungAdmin(maNguoiDung, nd); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

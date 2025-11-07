@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"strconv"
 	"fmt"
 	"net/http"
 
@@ -88,6 +89,12 @@ func (h *GioHangHandler) GetAll(c *gin.Context) {
 	})
 }
 func (h *GioHangHandler) ThanhToan(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "ID người dùng không hợp lệ"})
+		return
+	}
 	var req struct {
 		GioHang    []models.GioHang `json:"giohang"`
 		MaNguoiDung int             `json:"ma_nguoi_dung"`
@@ -102,7 +109,8 @@ func (h *GioHangHandler) ThanhToan(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
-	if donhang, err := h.service.ThanhToan(req.GioHang, req.MaNguoiDung, req.TinhThanh, req.QuanHuyen, req.PhuongXa, req.DuongSoNha, req.PhuongThucThanhToan, req.SoDienThoai); err != nil {
+
+	if donhang, err := h.service.ThanhToan(req.GioHang, id, req.TinhThanh, req.QuanHuyen, req.PhuongXa, req.DuongSoNha, req.PhuongThucThanhToan, req.SoDienThoai); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	} else {

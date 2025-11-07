@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/tongthanhdat009/CCNLTHD/internal/models"
 	"github.com/tongthanhdat009/CCNLTHD/internal/repositories"
@@ -91,6 +92,10 @@ func (s *gioHangService) ThanhToan(
 	phuongthucthanhtoan string,
 	sodienthoai string) (models.DonHang, error) {
 
+	if (tinh == "") || (quan == "") || (phuong == "") || (sonha == "") || (phuongthucthanhtoan == "") || (sodienthoai == "") {
+		return models.DonHang{}, errors.New("thiếu thông tin thanh toán")
+	}
+
 	tx := s.repo.BeginTransaction()
 	defer func() {
 		if r := recover(); r != nil {
@@ -144,6 +149,7 @@ func (s *gioHangService) ThanhToan(
 			})
 		}
 	}
+	fmt.Println("Chi tiết đơn hàng:", chiTietDonHangs)
 
 	// 5️⃣ Tạo tất cả chi tiết đơn hàng một lượt
 	if err := s.repo.CreateChiTietDonHang(tx, chiTietDonHangs); err != nil {

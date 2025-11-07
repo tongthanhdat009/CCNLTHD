@@ -28,7 +28,7 @@ type ChiTietDonHang struct {
 
     // --- Mối quan hệ Many-to-One ---
     // Chi tiết này thuộc về biến thể sản phẩm nào
-    DonHang DonHang `gorm:"foreignKey:MaDonHang" json:"don_hang,omitempty"`
+    DonHang *DonHang `gorm:"foreignKey:MaDonHang" json:"don_hang,omitempty"`
 }
 
 type GioHang struct {

@@ -42,8 +42,8 @@ func validateDangKy(nguoiDung models.NguoiDung) error {
 
 	// --- Validate chi tiết ---
 	// Tên đăng nhập >= 4 ký tự, không có khoảng trắng
-	if len(nguoiDung.TenDangNhap) < 4 {
-		return errors.New("ten dang nhap phai co it nhat 4 ky tu")
+	if len(nguoiDung.TenDangNhap) < 6 {
+		return errors.New("ten dang nhap phai co it nhat 6 ky tu")
 	}
 	if strings.Contains(nguoiDung.TenDangNhap, " ") {
 		return errors.New("ten dang nhap khong duoc chua khoang trang")
@@ -75,7 +75,7 @@ func (s *dangKyService) CreateNguoiDung(nguoiDung *models.NguoiDung) error {
         return err
     }
     if exists {
-        return errors.New("tên người dùng đã tồn tại")
+        return errors.New("tên tài khoản đã tồn tại")
     }
 
     // Hash mật khẩu bằng bcrypt
