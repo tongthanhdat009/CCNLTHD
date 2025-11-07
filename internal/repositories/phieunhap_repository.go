@@ -124,7 +124,7 @@ func (r *phieuNhapRepository) UpdatePhieuNhap(phieuNhap *models.PhieuNhap, creat
                 sanPhams = append(sanPhams, models.SanPham{
                     MaChiTietPhieuNhap: detail.MaChiTiet,
                     Seri:               fmt.Sprintf("PN%d-%d-%d", detail.MaChiTiet, timeStamp, i+1),
-                    TrangThai:          "Dang ban",
+                    TrangThai:          "Đang bán",
                 })
             }
         }

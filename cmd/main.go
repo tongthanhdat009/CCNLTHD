@@ -67,11 +67,11 @@ func main() {
 	gioHangRepo := repositories.NewGioHangRepository(database)
 	gioHangService := services.NewGioHangService(gioHangRepo)
 	gioHangHandler := handlers.NewGioHangHandler(gioHangService)
-	
+
 	// Tra cứu admin
-    tracuuAdminRepo := repositories.NewTraCuuAdminRepository(database)
-    tracuuAdminService := services.NewTraCuuAdminRepository(tracuuAdminRepo)
-    traCuuAdminHandler := handlers.NewTraCuuAdminHandler(tracuuAdminService)
+	tracuuAdminRepo := repositories.NewTraCuuAdminRepository(database)
+	tracuuAdminService := services.NewTraCuuAdminRepository(tracuuAdminRepo)
+	traCuuAdminHandler := handlers.NewTraCuuAdminHandler(tracuuAdminService)
 
 	//Khuyến mãi
 	khuyenMaiRepo := repositories.NewKhuyenMaiRepository(database)
@@ -101,20 +101,37 @@ func main() {
 	phanQuyenRepo := repositories.NewPhanQuyenRepository(database)
 	phanQuyenService := services.NewPhanQuyenService(phanQuyenRepo)
 	phanQuyenHandler := handlers.NewPhanQuyenHandler(phanQuyenService)
+	//đánh giá KH
+	reviewRepo := repositories.NewReviewRepository(database)
+	reviewSvc := services.NewReviewService(reviewRepo)
+	reviewHdl := handlers.NewReviewHandler(reviewSvc) // nếu không dùng chung handler cho admin
+
+	// đánh giá ADMIN
+	adminReviewRepo := repositories.NewAdminReviewRepository(database)
+	adminReviewSvc := services.NewAdminReviewService(adminReviewRepo)
+	adminReviewHdl := handlers.NewAdminReviewHandler(adminReviewSvc)
+	//thống kê
+	reportRepo := repositories.NewReportRepository(database)
+	reportSvc := services.NewReportService(reportRepo)
+	reportHdl := handlers.NewReportHandler(reportSvc)
+	//lịch sử đặt hàng
+	orderHistoryRepo := repositories.NewOrderHistoryRepository(database)
+	orderHistorySvc := services.NewOrderHistoryService(orderHistoryRepo)
+	orderHistoryHdl := handlers.NewOrderHistoryHandler(orderHistorySvc)
 
 	// --- Thiết lập server ---
 	r := gin.Default()
 	r.Static("/AnhHangHoa", "./static/AnhHangHoa")
 	// Gọi hàm để thiết lập tất cả các routes
-	routes.SetupRoutes(r, 
-        hangHoaHandler, 
-        donHangHandler, 
-        nguoiDungHandler, 
-        hangHandler, 
-        nhaCungCapHandler, 
-        dangKyHandler, 
-        dangNhapHandler, 
-        permissionMiddleware, 
+	routes.SetupRoutes(r,
+		hangHoaHandler,
+		donHangHandler,
+		nguoiDungHandler,
+		hangHandler,
+		nhaCungCapHandler,
+		dangKyHandler,
+		dangNhapHandler,
+		permissionMiddleware,
 		gioHangHandler,
 		khuyenMaiHandler,
         traCuuAdminHandler,
@@ -122,7 +139,15 @@ func main() {
 		bienTheHandler,
 		phieuNhapHandler,
 		quyenHandler,
-		phanQuyenHandler)
+		phanQuyenHandler,
+		reviewHdl,
+		adminReviewHdl,
+		reportHdl,
+		orderHistoryHdl,
+	)
+	for _, ri := range r.Routes() {
+		log.Println(ri.Method, ri.Path)
+	}
 
 	log.Println("Starting server on :8080")
 	if err := r.Run(":8080"); err != nil {

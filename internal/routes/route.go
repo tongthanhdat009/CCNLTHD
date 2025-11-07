@@ -23,7 +23,12 @@ func SetupRoutes(r *gin.Engine,
 			bienTheHandler *handlers.QuanLyBienTheHandler,
 			phieuNhapHandler *handlers.QuanLyPhieuNhapHandler,
 			quyenHandler *handlers.QuyenHandler,
-			phanQuyenHandler *handlers.PhanQuyenHandler) {
+			phanQuyenHandler *handlers.PhanQuyenHandler,
+			reviewHandler *handlers.ReviewHandler,
+			adminReviewHandler *handlers.AdminReviewHandler,
+			reportHandler *handlers.ReportHandler,
+			orderHistoryHandler *handlers.OrderHistoryHandler,) {
+	
 	// Các route không cần xác thực
 
 	r.POST("/api/dangky", dangKyHandler.CreateNguoiDung)
@@ -189,5 +194,76 @@ func SetupRoutes(r *gin.Engine,
 			phanQuyenRoutes.GET("/:id", phanQuyenHandler.GetByID)
 			phanQuyenRoutes.PUT("", phanQuyenHandler.UpdatePhanQuyen)
 		}
+		// KH đánh giá
+		reviews := api.Group("/reviews")
+		{
+			// Khách hàng gửi đánh giá
+			reviews.POST("", reviewHandler.Create)
+
+			// Xem các đánh giá của chính tôi
+			reviews.GET("/me", reviewHandler.GetMine)
+
+			// Xem đánh giá theo 1 sản phẩm nhập kho (MaSanPham)
+			reviews.GET("/product/:id", reviewHandler.GetByProduct)
+		}
+		// Routes ADMIN cho Đánh giá (lọc/duyệt/từ chối/xóa)
+		admin := api.Group("/admin/reviews")
+		{
+			admin.GET("",
+				permissionMiddleware.Require("Quản lý đánh giá", "Xử lý"),
+				adminReviewHandler.List,
+			)
+			admin.PUT("/:id/approve",
+				permissionMiddleware.Require("Quản lý đánh giá", "Xử lý"),
+				adminReviewHandler.Approve,
+			)
+			admin.PUT("/:id/reject",
+				permissionMiddleware.Require("Quản lý đánh giá", "Xử lý"),
+				adminReviewHandler.Reject,
+			)
+			admin.DELETE("/:id",
+				permissionMiddleware.Require("Quản lý đánh giá", "Xử lý"),
+				adminReviewHandler.Delete,
+			)
+		}
+		//routes thống kê báo cáo
+		reports := api.Group("/reports")
+		{
+			reports.GET("/top-customers",
+				permissionMiddleware.Require("Thống kê & báo cáo", "Xem"),
+				reportHandler.TopCustomers,
+			)
+			reports.GET("/purchase-value",
+				permissionMiddleware.Require("Thống kê & báo cáo", "Xem"),
+				reportHandler.PurchaseValue,
+			)
+			reports.GET("/imported-products",
+				permissionMiddleware.Require("Thống kê & báo cáo", "Xem"),
+				reportHandler.ImportedProducts,
+			)
+			reports.GET("/imported-brands",
+				permissionMiddleware.Require("Thống kê & báo cáo", "Xem"),
+				reportHandler.ImportedBrands,
+			)
+			reports.GET("/invoices",
+				permissionMiddleware.Require("Thống kê & báo cáo", "Xem"),
+				reportHandler.Invoices,
+			)
+			reports.GET("/best-sellers",
+				permissionMiddleware.Require("Thống kê & báo cáo", "Xem"),
+				reportHandler.BestSellers,
+			)
+			reports.GET("/revenue-by-brand",
+				permissionMiddleware.Require("Thống kê & báo cáo", "Xem"),
+				reportHandler.RevenueByBrand,
+			)
+		}
+		// Routes cho Lịch sử Đặt Hàng
+		orders := api.Group("/orders")
+		{
+			orders.GET("/me", orderHistoryHandler.ListMine)
+			orders.GET("/:id", orderHistoryHandler.GetDetail)
+		}
+
 	}
 }

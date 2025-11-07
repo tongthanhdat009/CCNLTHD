@@ -112,7 +112,7 @@ func (s *quanLyPhieuNhapService) UpdatePhieuNhap(phieuNhap *models.PhieuNhap, ap
 	}
 	
 	return s.phieuNhapRepo.UpdatePhieuNhap(phieuNhap, approve)
-}
+} 
 
 func (s *quanLyPhieuNhapService) SearchPhieuNhaps(tenNguoiDung, tenNhaCungCap, trangThai string, tuNgay, denNgay *time.Time) ([]models.PhieuNhap, error) {
     return s.phieuNhapRepo.SearchPhieuNhap(tenNguoiDung, tenNhaCungCap, trangThai, tuNgay, denNgay)

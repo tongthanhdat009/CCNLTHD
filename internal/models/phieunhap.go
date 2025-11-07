@@ -14,8 +14,8 @@ type PhieuNhap struct {
     MoTa        sql.NullString `gorm:"column:MoTa" json:"mo_ta"`
 
     // Mối quan hệ
-    NguoiDung        NguoiDung          `gorm:"foreignKey:MaNguoiDung" json:"nguoi_dung,omitempty"`
-    NhaCungCap NhaCungCap `gorm:"foreignKey:MaNCC;references:MaNCC" json:"nha_cung_cap,omitempty"`
+    NguoiDung        *NguoiDung          `gorm:"foreignKey:MaNguoiDung" json:"nguoi_dung,omitempty"`
+    NhaCungCap *NhaCungCap `gorm:"foreignKey:MaNCC;references:MaNCC" json:"nha_cung_cap,omitempty"`
     ChiTietPhieuNhap []ChiTietPhieuNhap `gorm:"foreignKey:MaPhieuNhap" json:"chi_tiet_phieu_nhap,omitempty"`
 }
 
@@ -29,7 +29,7 @@ type ChiTietPhieuNhap struct {
     NgaySanXuat     sql.NullTime  `gorm:"column:NgaySanXuat" json:"ngay_san_xuat"`
     ThoiGianBaoHanh sql.NullInt64 `gorm:"column:ThoiGianBaoHanh" json:"thoi_gian_bao_hanh"`
 
-    PhieuNhap PhieuNhap `gorm:"foreignKey:MaPhieuNhap" json:"phieu_nhap,omitempty"`
+    PhieuNhap *PhieuNhap `gorm:"foreignKey:MaPhieuNhap" json:"phieu_nhap,omitempty"`
     // Mối quan hệ
     BienThe  BienThe   `gorm:"foreignKey:MaBienthe" json:"bien_the,omitempty"`
     SanPhams []SanPham `gorm:"foreignKey:MaChiTietPhieuNhap" json:"san_phams,omitempty"`
@@ -42,7 +42,7 @@ type SanPham struct {
     Seri               string `gorm:"column:Seri" json:"seri"`
     TrangThai          string `gorm:"column:TrangThai" json:"trang_thai"`
 
-    ChiTietPhieuNhap ChiTietPhieuNhap `gorm:"foreignKey:MaChiTietPhieuNhap" json:"chi_tiet_phieu_nhap,omitempty"`
+    ChiTietPhieuNhap *ChiTietPhieuNhap `gorm:"foreignKey:MaChiTietPhieuNhap" json:"chi_tiet_phieu_nhap,omitempty"`
     ChiTietDonHangs []ChiTietDonHang `gorm:"foreignKey:MaSanPham" json:"chi_tiet_don_hangs,omitempty"`
 }
 
