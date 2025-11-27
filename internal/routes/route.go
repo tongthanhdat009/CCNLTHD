@@ -97,18 +97,18 @@ func SetupRoutes(r *gin.Engine,
 		gioHangRoutes := api.Group("/giohang")
 		{
 			// Lấy giỏ hàng của user hiện tại
-			gioHangRoutes.GET("", permissionMiddleware.RequireUserIDMatch(), gioHangHandler.GetAll)
+			gioHangRoutes.GET("", gioHangHandler.GetAll)
 
 			// Thêm sản phẩm vào giỏ hàng
-			gioHangRoutes.POST("", permissionMiddleware.RequireUserIDMatch(), gioHangHandler.TaoGioHang)
+			gioHangRoutes.POST("", gioHangHandler.TaoGioHang)
 
 			// Cập nhật số lượng sản phẩm trong giỏ
-			gioHangRoutes.PUT("", permissionMiddleware.RequireUserIDMatch(), gioHangHandler.SuaGioHang)
+			gioHangRoutes.PUT("", gioHangHandler.SuaGioHang)
 
 			// Xóa sản phẩm khỏi giỏ hàng
-			gioHangRoutes.DELETE("", permissionMiddleware.RequireUserIDMatch(), gioHangHandler.XoaGioHang)
-			gioHangRoutes.GET("/:id", permissionMiddleware.RequireUserIDMatch(), gioHangHandler.GetAll)
-			gioHangRoutes.POST("/thanhtoan/:id", permissionMiddleware.RequireUserIDMatch(), gioHangHandler.ThanhToan)
+			gioHangRoutes.DELETE("", gioHangHandler.XoaGioHang)
+			gioHangRoutes.GET("/:id", gioHangHandler.GetAll)
+			gioHangRoutes.POST("/thanhtoan/:id", gioHangHandler.ThanhToan)
 		}
 
 		// Routes cho Khuyến Mãi
