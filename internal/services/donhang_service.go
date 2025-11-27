@@ -36,11 +36,12 @@ type DonHangService interface {
 }
 
 type donHangService struct {
-	repo repositories.DonHangRepository
+	repo        repositories.DonHangRepository
+	bienTheRepo repositories.BienTheRepository
 }
 
-func NewDonHangService(repo repositories.DonHangRepository) DonHangService {
-	return &donHangService{repo: repo}
+func NewDonHangService(repo repositories.DonHangRepository, bienTheRepo repositories.BienTheRepository) DonHangService {
+	return &donHangService{repo: repo, bienTheRepo: bienTheRepo}
 }
 
 // CreateDonHang - Tạo đơn hàng mới
@@ -124,7 +125,6 @@ func (s *donHangService) UpdateDonHang(donHang *models.DonHang) error {
 		return errors.New("phương thức thanh toán không hợp lệ")
 	}
 
-
 	// Cập nhật đơn hàng
 	return s.repo.UpdateDonHang(donHang)
 }
@@ -173,6 +173,19 @@ func (s *donHangService) ApproveOrder(maDonHang int) error {
 	// Chỉ có thể duyệt đơn hàng ở trạng thái "Đang xử lý"
 	if currentStatus != "Đang xử lý" {
 		return errors.New("chỉ có thể duyệt đơn hàng ở trạng thái 'Đang xử lý'")
+	}
+
+	// Lấy chi tiết đơn hàng để cập nhật trạng thái sản phẩm
+	donHang, err := s.repo.GetDetailByID(maDonHang)
+	if err != nil {
+		return err
+	}
+
+	// Cập nhật trạng thái sản phẩm thành "Đã bán"
+	for _, chiTiet := range donHang.ChiTietDonHangs {
+		if err := s.bienTheRepo.UpdateSanPhamStatus(chiTiet.MaSanPham, "Đã bán"); err != nil {
+			return err
+		}
 	}
 
 	// Cập nhật trạng thái sang "Đang giao hàng"
@@ -243,6 +256,31 @@ func (s *donHangService) CancelOrder(maDonHang int, reason string) error {
 
 	if !canCancel {
 		return errors.New("không thể hủy đơn hàng ở trạng thái '" + currentStatus + "'")
+	}
+
+	// Lấy chi tiết đơn hàng để cập nhật trạng thái và số lượng sản phẩm
+	donHang, err := s.repo.GetDetailByID(maDonHang)
+	if err != nil {
+		return err
+	}
+
+	// Cập nhật trạng thái sản phẩm thành "Chưa bán" và tăng số lượng tồn
+	for _, chiTiet := range donHang.ChiTietDonHangs {
+		// Cập nhật trạng thái sản phẩm
+		if err := s.bienTheRepo.UpdateSanPhamStatus(chiTiet.MaSanPham, "Đang bán"); err != nil {
+			return err
+		}
+
+		// Lấy mã biến thể từ mã sản phẩm
+		maBienThe, err := s.bienTheRepo.GetMaBienTheFromSanPham(chiTiet.MaSanPham)
+		if err != nil {
+			return err
+		}
+
+		// Tăng số lượng tồn của biến thể
+		if err := s.bienTheRepo.IncrementSoLuongTon(maBienThe, 1); err != nil {
+			return err
+		}
 	}
 
 	// TODO: Lưu lý do hủy vào database nếu cần

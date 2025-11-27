@@ -30,9 +30,14 @@ func main() {
 	hangHoaService := services.NewHangHoaService(hangHoaRepo)
 	hangHoaHandler := handlers.NewHangHoaHandler(hangHoaService)
 
+	// Quản lý biến thể
+	bienTheRepo := repositories.NewBienTheRepository(database)
+	bienTheService := services.NewBienTheService(bienTheRepo)
+	bienTheHandler := handlers.NewQuanLyBienTheHandler(bienTheService)
+
 	// Đơn hàng
 	donHangRepo := repositories.NewDonHangRepository(database)
-	donHangService := services.NewDonHangService(donHangRepo)
+	donHangService := services.NewDonHangService(donHangRepo, bienTheRepo)
 	donHangHandler := handlers.NewDonHangHandler(donHangService)
 
 	// Người dùng
@@ -83,11 +88,6 @@ func main() {
 	timKiemHangHoaService := services.NewTimKiemHangHoaService(timKiemHangHoaRepo)
 	timKiemHangHoaHandler := handlers.NewTimKiemHangHoaHandler(timKiemHangHoaService)
 
-	//Quản lý biến thể
-	bienTheRepo := repositories.NewBienTheRepository(database)
-	bienTheService := services.NewBienTheService(bienTheRepo)
-	bienTheHandler := handlers.NewQuanLyBienTheHandler(bienTheService)
-
 	// Quản lý phiếu nhập
 	phieuNhapRepo := repositories.NewPhieuNhapRepository(database)
 	phieuNhapService := services.NewQuanLyPhieuNhapService(phieuNhapRepo)
@@ -134,7 +134,7 @@ func main() {
 		permissionMiddleware,
 		gioHangHandler,
 		khuyenMaiHandler,
-        traCuuAdminHandler,
+		traCuuAdminHandler,
 		timKiemHangHoaHandler,
 		bienTheHandler,
 		phieuNhapHandler,

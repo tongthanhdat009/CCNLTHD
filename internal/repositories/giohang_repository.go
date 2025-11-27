@@ -29,6 +29,7 @@ type GioHangRepository interface {
 type GioHangRepo struct {
 	db *gorm.DB
 }
+
 func (r *GioHangRepo) BeginTransaction() *gorm.DB {
 	return r.db.Begin()
 }
@@ -139,7 +140,6 @@ func (r *GioHangRepo) GetAll(manguoidung int) ([]models.GioHang, error) {
 	return gioHangs, nil
 }
 
-
 func (r *GioHangRepo) GetAllGia(manguoidung int) (float64, error) {
 	var totalGia float64
 	err := r.db.Model(&models.GioHang{}).
@@ -161,8 +161,9 @@ func (r *GioHangRepo) GetByID(manguoidung int) ([]models.GioHang, error) {
 	return gioHang, nil
 }
 
-func (s *GioHangRepo) CheckBienThe(maBienThe int, gia int, soluong int)  error {
+func (s *GioHangRepo) CheckBienThe(maBienThe int, gia int, soluong int) error {
 	var bienThe models.BienThe
+	// 1. Lấy thông tin biến thể
 	err := s.db.Where("MaBienThe = ?", maBienThe).First(&bienThe).Error
 	if err != nil {
 		return fmt.Errorf("không tìm thấy sản phẩm mã biến thể %d", maBienThe)
@@ -170,9 +171,33 @@ func (s *GioHangRepo) CheckBienThe(maBienThe int, gia int, soluong int)  error {
 	if bienThe.TrangThai != "DangBan" {
 		return fmt.Errorf("sản phẩm mã biến thể %d không còn bán", maBienThe)
 	}
-	if bienThe.Gia != float64(gia) {
+
+	// 2. Lấy thông tin hàng hóa và khuyến mãi
+	var hangHoa models.HangHoa
+	if err := s.db.Preload("KhuyenMai").Where("MaHangHoa = ?", bienThe.MaHangHoa).First(&hangHoa).Error; err == nil {
+		bienThe.HangHoa = &hangHoa
+	}
+
+	// Tính giá hiện tại (có áp dụng khuyến mãi nếu có)
+	currentPrice := bienThe.Gia
+
+	// Debug log để kiểm tra
+	if bienThe.HangHoa == nil {
+		fmt.Printf("[DEBUG] Biến thể %d: Không tìm thấy thông tin Hàng hóa (MaHangHoa: %d)\n", maBienThe, bienThe.MaHangHoa)
+	} else if bienThe.HangHoa.KhuyenMai == nil {
+		fmt.Printf("[DEBUG] Biến thể %d (Hàng hóa %d): Không có khuyến mãi\n", maBienThe, bienThe.HangHoa.MaHangHoa)
+	} else {
+		fmt.Printf("[DEBUG] Biến thể %d: Có khuyến mãi %.2f%%\n", maBienThe, bienThe.HangHoa.KhuyenMai.GiaTri)
+	}
+
+	if bienThe.HangHoa != nil && bienThe.HangHoa.KhuyenMai != nil {
+		currentPrice = currentPrice * (100 - bienThe.HangHoa.KhuyenMai.GiaTri) / 100
+		fmt.Printf("Áp dụng khuyến mãi: %.2f\n", currentPrice)
+	}
+
+	if currentPrice != float64(gia) {
 		return fmt.Errorf("giá sản phẩm mã biến thể %d đã thay đổi (giỏ: %.2f, hiện tại: %.2f)",
-			maBienThe, float64(gia), bienThe.Gia)
+			maBienThe, float64(gia), currentPrice)
 	}
 	if bienThe.SoLuongTon < soluong {
 		return fmt.Errorf("số lượng sản phẩm mã biến thể %d không đủ (giỏ: %d, hiện tại: %d)",
@@ -192,7 +217,7 @@ func (r *GioHangRepo) GetSanPham(tx *gorm.DB, maBienThe int, soLuong int) ([]mod
 	if err := tx.
 		Table("SanPham").
 		Joins("JOIN ChiTietPhieuNhap ON ChiTietPhieuNhap.MaChiTiet = SanPham.MaChiTietPhieuNhap").
-		Where("ChiTietPhieuNhap.MaBienThe = ? AND SanPham.TrangThai = ?", maBienThe, "Chưa bán").
+		Where("ChiTietPhieuNhap.MaBienThe = ? AND SanPham.TrangThai = ?", maBienThe, "Đang bán").
 		Limit(soLuong).
 		Find(&sanPhams).Error; err != nil {
 		return nil, err
@@ -214,7 +239,12 @@ func (r *GioHangRepo) GetSanPham(tx *gorm.DB, maBienThe int, soLuong int) ([]mod
 		return nil, err
 	}
 
-	// 3️⃣ Trả về danh sách sản phẩm đã cập nhật
+	// 3️⃣ Cập nhật số lượng tồn của biến thể
+	if err := r.UpdateTonKhoBienThe(tx, maBienThe, soLuong); err != nil {
+		return nil, err
+	}
+
+	// 4️⃣ Trả về danh sách sản phẩm đã cập nhật
 	return sanPhams, nil
 }
 
