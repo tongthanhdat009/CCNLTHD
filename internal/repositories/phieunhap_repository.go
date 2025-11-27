@@ -110,6 +110,20 @@ func (r *phieuNhapRepository) UpdatePhieuNhap(phieuNhap *models.PhieuNhap, creat
             return errors.New("phiếu nhập chưa có chi tiết")
         }
 
+        // Cập nhật số lượng tồn kho cho các biến thể
+        for _, detail := range details {
+            if detail.SoLuong <= 0 {
+                continue
+            }
+            
+            // Cập nhật số lượng tồn kho của biến thể
+            if err := tx.Model(&models.BienThe{}).
+                Where("MaBienThe = ?", detail.MaBienthe).
+                UpdateColumn("SoLuongTon", gorm.Expr("SoLuongTon + ?", detail.SoLuong)).Error; err != nil {
+                return err
+            }
+        }
+
         // Tạo mã sê-ri cho sản phẩm
         timeStamp := time.Now().UnixNano()
         var sanPhams []models.SanPham
