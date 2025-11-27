@@ -2,9 +2,9 @@ package models
 
 // ChucNang model
 type ChucNang struct {
-    MaChucNang       int                 `gorm:"primaryKey;column:MaChucNang" json:"ma_chuc_nang"`
-    TenChucNang      string              `gorm:"column:TenChucNang" json:"ten_chuc_nang"`
-    ChiTietChucNangs []ChiTietChucNang   `gorm:"foreignKey:MaChucNang" json:"chi_tiet_chuc_nangs,omitempty"`
+	MaChucNang       int               `gorm:"primaryKey;column:MaChucNang" json:"ma_chuc_nang"`
+	TenChucNang      string            `gorm:"column:TenChucNang" json:"ten_chuc_nang"`
+	ChiTietChucNangs []ChiTietChucNang `gorm:"foreignKey:MaChucNang" json:"chi_tiet_chuc_nangs,omitempty"`
 }
 
 // ChiTietChucNang model
@@ -25,6 +25,6 @@ type PhanQuyen struct {
 
 
 // --- Cung cấp tên bảng cho GORM ---
-func (ChucNang) TableName() string { return "chucnang" }
+func (ChucNang) TableName() string        { return "chucnang" }
 func (ChiTietChucNang) TableName() string { return "chitietchucnang" }
-func (PhanQuyen) TableName() string { return "phanquyen" }
+func (PhanQuyen) TableName() string       { return "phanquyen" }

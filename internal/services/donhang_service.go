@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/tongthanhdat009/CCNLTHD/internal/models"
@@ -17,7 +18,7 @@ type DonHangService interface {
 	DeleteDonHang(maDonHang int) error
 
 	// Quản lý trạng thái
-	ApproveOrder(maDonHang int) error                        // Duyệt đơn hàng (Chờ xác nhận -> Đã xác nhận)
+	ApproveOrder(maDonHang int) error                        // Duyệt đơn hàng (Đang xử lý -> Đã xác nhận)
 	UpdateOrderStatus(maDonHang int, trangThai string) error // Cập nhật trạng thái đơn hàng
 	CancelOrder(maDonHang int, reason string) error          // Hủy đơn hàng
 
@@ -49,11 +50,14 @@ func (s *donHangService) CreateDonHang(donHang *models.DonHang) error {
 		return err
 	}
 
+	// Log phương thức thanh toán để debug
+	fmt.Printf("[DEBUG] Tạo đơn hàng mới - Phương thức thanh toán: %s\n", donHang.PhuongThucThanhToan)
+
 	// Thiết lập trạng thái mặc định
 	if donHang.TrangThai == "" {
-		donHang.TrangThai = "Chờ xác nhận"
+		donHang.TrangThai = "Đang xử lý"
 	}
-	
+
 	// Tạo đơn hàng
 	return s.repo.CreateDonHang(donHang)
 }
@@ -91,11 +95,37 @@ func (s *donHangService) UpdateDonHang(donHang *models.DonHang) error {
 		return errors.New("không thể sửa đổi đơn hàng ở trạng thái hiện tại")
 	}
 
-	// Validate dữ liệu
-	if err := s.ValidateOrderData(donHang); err != nil {
+	// Lấy thông tin đơn hàng cũ để giữ nguyên MaNguoiDung
+	oldOrder, err := s.repo.GetByID(donHang.MaDonHang)
+	if err != nil {
 		return err
 	}
 
+	// Giữ nguyên MaNguoiDung và NgayTao
+	donHang.MaNguoiDung = oldOrder.MaNguoiDung
+	donHang.NgayTao = oldOrder.NgayTao
+
+	// Validate các trường khác (không validate MaNguoiDung)
+	if donHang.TongTien < 0 {
+		return errors.New("tổng tiền không hợp lệ")
+	}
+
+	validPaymentMethods := []string{"Tiền mặt", "Chuyển khoản", "Ví điện tử", "Thẻ tín dụng", "COD"}
+	isValidPayment := false
+	// Log phương thức thanh toán khi cập nhật
+	fmt.Printf("[DEBUG] Cập nhật đơn hàng - Phương thức thanh toán: %s\n", donHang.PhuongThucThanhToan)
+	for _, method := range validPaymentMethods {
+		if donHang.PhuongThucThanhToan == method {
+			isValidPayment = true
+			break
+		}
+	}
+	if !isValidPayment {
+		return errors.New("phương thức thanh toán không hợp lệ")
+	}
+
+
+	// Cập nhật đơn hàng
 	return s.repo.UpdateDonHang(donHang)
 }
 
@@ -116,15 +146,14 @@ func (s *donHangService) DeleteDonHang(maDonHang int) error {
 		return err
 	}
 
-	// Chỉ cho phép xóa đơn hàng ở trạng thái "Đã hủy" hoặc "Chờ xác nhận"
-	if currentStatus != "Đã hủy" && currentStatus != "Chờ xác nhận" {
-		return errors.New("chỉ có thể xóa đơn hàng ở trạng thái 'Chờ xác nhận' hoặc 'Đã hủy'")
+	// Chỉ cho phép xóa đơn hàng ở trạng thái "Đã hủy" hoặc "Đang xử lý"
+	if currentStatus != "Đã hủy" && currentStatus != "Đang xử lý" {
+		return errors.New("chỉ có thể xóa đơn hàng ở trạng thái 'Đang xử lý' hoặc 'Đã hủy'")
 	}
 
 	return s.repo.DeleteDonHang(maDonHang)
 }
 
-// ApproveOrder - Duyệt đơn hàng (Chờ xác nhận -> Đã xác nhận)
 func (s *donHangService) ApproveOrder(maDonHang int) error {
 	// Kiểm tra đơn hàng có tồn tại không
 	exists, err := s.repo.ExistsDonHang(maDonHang)
@@ -135,18 +164,19 @@ func (s *donHangService) ApproveOrder(maDonHang int) error {
 		return errors.New("đơn hàng không tồn tại")
 	}
 
-	// Kiểm tra trạng thái hiện tại
+	// Lấy trạng thái hiện tại
 	currentStatus, err := s.repo.GetCurrentStatus(maDonHang)
 	if err != nil {
 		return err
 	}
 
-	if currentStatus != "Chờ xác nhận" {
-		return errors.New("chỉ có thể duyệt đơn hàng ở trạng thái 'Chờ xác nhận'")
+	// Chỉ có thể duyệt đơn hàng ở trạng thái "Đang xử lý"
+	if currentStatus != "Đang xử lý" {
+		return errors.New("chỉ có thể duyệt đơn hàng ở trạng thái 'Đang xử lý'")
 	}
 
-	// Cập nhật trạng thái
-	return s.repo.UpdateStatus(maDonHang, "Đã xác nhận")
+	// Cập nhật trạng thái sang "Đang giao hàng"
+	return s.repo.UpdateStatus(maDonHang, "Đang giao hàng")
 }
 
 // UpdateOrderStatus - Cập nhật trạng thái đơn hàng
@@ -161,7 +191,7 @@ func (s *donHangService) UpdateOrderStatus(maDonHang int, trangThai string) erro
 
 	// Kiểm tra trạng thái hợp lệ
 	validStatuses := []string{
-		"Chờ xác nhận",
+		"Đang xử lý",
 		"Đang giao hàng",
 		"Đã giao hàng",
 		"Hoàn thành",
@@ -202,7 +232,7 @@ func (s *donHangService) CancelOrder(maDonHang int, reason string) error {
 	}
 
 	// Chỉ cho phép hủy ở một số trạng thái nhất định
-	allowedStatuses := []string{"Chờ xác nhận", "Đã xác nhận", "Đang chuẩn bị", "Giao hàng thất bại"}
+	allowedStatuses := []string{"Đang xử lý", "Đã xác nhận", "Đang chuẩn bị", "Giao hàng thất bại"}
 	canCancel := false
 	for _, status := range allowedStatuses {
 		if status == currentStatus {
@@ -251,12 +281,13 @@ func (s *donHangService) GetDetailByID(maDonHang int) (models.DonHang, error) {
 	return s.repo.GetDetailByID(maDonHang)
 }
 
-// ValidateOrderData - Validate dữ liệu đơn hàng
 func (s *donHangService) ValidateOrderData(donHang *models.DonHang) error {
+	// Validate mã người dùng
 	if donHang.MaNguoiDung <= 0 {
 		return errors.New("mã người dùng không hợp lệ")
 	}
 
+	// Validate tổng tiền
 	if donHang.TongTien < 0 {
 		return errors.New("tổng tiền không hợp lệ")
 	}
@@ -282,7 +313,8 @@ func (s *donHangService) ValidateOrderData(donHang *models.DonHang) error {
 	}
 
 	// Validate phương thức thanh toán
-	validPaymentMethods := []string{"Tiền mặt", "Chuyển khoản", "Ví điện tử", "Thẻ tín dụng"}
+	validPaymentMethods := []string{"Tiền mặt", "Chuyển khoản", "Ví điện tử", "Thẻ tín dụng", "COD"}
+	fmt.Printf("[DEBUG] Validate phương thức thanh toán: %s\n", donHang.PhuongThucThanhToan)
 	isValidPayment := false
 	for _, method := range validPaymentMethods {
 		if method == donHang.PhuongThucThanhToan {
@@ -290,9 +322,21 @@ func (s *donHangService) ValidateOrderData(donHang *models.DonHang) error {
 			break
 		}
 	}
-
 	if !isValidPayment {
 		return errors.New("phương thức thanh toán không hợp lệ")
+	}
+
+	// Validate trạng thái
+	validStatuses := []string{"Đang xử lý", "Đang giao hàng", "Đã giao hàng", "Hoàn thành", "Đã hủy", "Giao hàng thất bại"}
+	isValidStatus := false
+	for _, status := range validStatuses {
+		if donHang.TrangThai == status {
+			isValidStatus = true
+			break
+		}
+	}
+	if !isValidStatus && donHang.TrangThai != "" {
+		return errors.New("trạng thái không hợp lệ")
 	}
 
 	return nil
@@ -305,8 +349,8 @@ func (s *donHangService) CanModifyOrder(maDonHang int) (bool, error) {
 		return false, err
 	}
 
-	// Chỉ cho phép sửa đổi ở trạng thái "Chờ xác nhận" và "Đã xác nhận"
-	modifiableStatuses := []string{"Chờ xác nhận", "Đang giao hàng", "Giao hàng thất bại"}
+	// Chỉ cho phép sửa đổi ở trạng thái "Đang xử lý" và "Đã xác nhận"
+	modifiableStatuses := []string{"Đang xử lý", "Đang xử lý", "Đang giao hàng", "Giao hàng thất bại"}
 	for _, status := range modifiableStatuses {
 		if status == currentStatus {
 			return true, nil

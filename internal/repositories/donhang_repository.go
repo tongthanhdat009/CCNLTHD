@@ -53,7 +53,7 @@ func (r *DonHangRepo) CreateChiTietDonHang(donHang *models.DonHang) error {
 // GetByID - Lấy đơn hàng theo mã (không load chi tiết)
 func (r *DonHangRepo) GetByID(maDonHang int) (models.DonHang, error) {
 	var donHang models.DonHang
-	err := r.db.Where("ma_don_hang = ?", maDonHang).First(&donHang).Error
+	err := r.db.Where("MaDonHang = ?", maDonHang).First(&donHang).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return donHang, errors.New("đơn hàng không tồn tại")
@@ -68,7 +68,7 @@ func (r *DonHangRepo) GetDetailByID(maDonHang int) (models.DonHang, error) {
 	var donHang models.DonHang
 	err := r.db.
 		Preload("ChiTietDonHangs").
-		Where("ma_don_hang = ?", maDonHang).
+		Where("MaDonHang = ?", maDonHang).
 		First(&donHang).Error
 
 	if err != nil {
@@ -114,8 +114,8 @@ func (r *DonHangRepo) UpdateStatus(maDonHang int, trangThai string) error {
 
 	// Cập nhật trạng thái
 	return r.db.Model(&models.DonHang{}).
-		Where("ma_don_hang = ?", maDonHang).
-		Update("trang_thai", trangThai).Error
+		Where("MaDonHang = ?", maDonHang).
+		Update("TrangThai", trangThai).Error
 }
 
 // UpdateDonHang - Cập nhật thông tin đơn hàng
@@ -135,23 +135,25 @@ func (r *DonHangRepo) SearchDonHang(keyword string, trangThai string, fromDate, 
 
 	// Tìm theo mã đơn hàng hoặc mã người dùng
 	if keyword != "" {
-		query = query.Where("ma_don_hang = ? OR ma_nguoi_dung = ?", keyword, keyword)
+		// Thử convert keyword sang int để tìm theo mã
+		// Nếu không convert được thì bỏ qua điều kiện này
+		query = query.Where("MaDonHang = ? OR MaNguoiDung = ?", keyword, keyword)
 	}
 
 	// Lọc theo trạng thái
 	if trangThai != "" {
-		query = query.Where("trang_thai = ?", trangThai)
+		query = query.Where("TrangThai = ?", trangThai)
 	}
 
 	// Lọc theo khoảng thời gian
 	if !fromDate.IsZero() {
-		query = query.Where("ngay_tao >= ?", fromDate)
+		query = query.Where("NgayTao >= ?", fromDate)
 	}
 	if !toDate.IsZero() {
-		query = query.Where("ngay_tao <= ?", toDate)
+		query = query.Where("NgayTao <= ?", toDate)
 	}
 
-	err := query.Order("ngay_tao DESC").Find(&donHangs).Error
+	err := query.Order("NgayTao DESC").Find(&donHangs).Error
 	return donHangs, err
 }
 
@@ -160,7 +162,7 @@ func (r *DonHangRepo) GetByNguoiDung(maNguoiDung int) ([]models.DonHang, error) 
 	var donHangs []models.DonHang
 	err := r.db.
 		Preload("ChiTietDonHangs").
-		Where("ma_nguoi_dung = ?", maNguoiDung).
+		Where("MaNguoiDung = ?", maNguoiDung).
 		Find(&donHangs).Error
 	return donHangs, err
 }
@@ -170,8 +172,8 @@ func (r *DonHangRepo) GetByStatus(trangThai string) ([]models.DonHang, error) {
 	var donHangs []models.DonHang
 	err := r.db.
 		Preload("ChiTietDonHangs").
-		Where("trang_thai = ?", trangThai).
-		Order("ngay_tao DESC").
+		Where("TrangThai = ?", trangThai).
+		Order("NgayTao DESC").
 		Find(&donHangs).Error
 	return donHangs, err
 }
@@ -180,7 +182,7 @@ func (r *DonHangRepo) GetByStatus(trangThai string) ([]models.DonHang, error) {
 func (r *DonHangRepo) ExistsDonHang(maDonHang int) (bool, error) {
 	var count int64
 	err := r.db.Model(&models.DonHang{}).
-		Where("ma_don_hang = ?", maDonHang).
+		Where("MaDonHang = ?", maDonHang).
 		Count(&count).Error
 	return count > 0, err
 }
@@ -188,8 +190,8 @@ func (r *DonHangRepo) ExistsDonHang(maDonHang int) (bool, error) {
 // GetCurrentStatus - Lấy trạng thái hiện tại của đơn hàng
 func (r *DonHangRepo) GetCurrentStatus(maDonHang int) (string, error) {
 	var donHang models.DonHang
-	err := r.db.Select("trang_thai").
-		Where("ma_don_hang = ?", maDonHang).
+	err := r.db.Select("TrangThai").
+		Where("MaDonHang = ?", maDonHang).
 		First(&donHang).Error
 	if err != nil {
 		return "", err
@@ -201,7 +203,7 @@ func (r *DonHangRepo) GetCurrentStatus(maDonHang int) (string, error) {
 func (r *DonHangRepo) CanUpdateStatus(currentStatus, newStatus string) bool {
 	// Định nghĩa flow trạng thái hợp lệ
 	validTransitions := map[string][]string{
-		"Chờ xác nhận":       {"Đang giao hàng", "Đã hủy"},
+		"Đang xử lý":       {"Đang giao hàng", "Đã hủy"},
 		"Đang giao hàng":     {"Đã giao hàng", "Giao hàng thất bại"},
 		"Giao hàng thất bại": {"Đang giao hàng", "Đã hủy"},
 		"Đã giao hàng":       {"Hoàn thành"},
@@ -221,4 +223,3 @@ func (r *DonHangRepo) CanUpdateStatus(currentStatus, newStatus string) bool {
 	}
 	return false
 }
-
