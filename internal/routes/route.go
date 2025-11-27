@@ -116,7 +116,7 @@ func SetupRoutes(r *gin.Engine,
 		{
 			khuyenMaiRoutes.GET("", khuyenMaiHandler.GetAll)
 			khuyenMaiRoutes.POST("", khuyenMaiHandler.CreateKhuyenMai)
-			khuyenMaiRoutes.PUT("", khuyenMaiHandler.UpdateKhuyenMai)
+			khuyenMaiRoutes.PUT("/:id", khuyenMaiHandler.UpdateKhuyenMai)
 			khuyenMaiRoutes.DELETE("/:id", khuyenMaiHandler.DeleteKhuyenMai)
 			khuyenMaiRoutes.GET("/:id", khuyenMaiHandler.GetByID)
 			khuyenMaiRoutes.GET("/search", khuyenMaiHandler.SearchKhuyenMai)

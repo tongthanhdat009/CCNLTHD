@@ -108,7 +108,9 @@ INSERT INTO `chitietchucnang` (`MaChiTietChucNang`, `MaChucNang`, `TenChiTietChu
 (33, 10, 'Xem'),
 (34, 10, 'Thêm'),
 (35, 10, 'Sửa'),
-(36, 10, 'Xóa');
+(36, 10, 'Xóa'),
+(37, 13, 'Xem'),
+(38, 14, 'Xử lý');
 
 -- --------------------------------------------------------
 
@@ -133,7 +135,13 @@ INSERT INTO `chitietdonhang` (`MaChiTiet`, `MaDonHang`, `MaSanPham`, `GiaBan`) V
 (28, 13, 1, 2500000.00),
 (29, 15, 2, 2500000.00),
 (30, 16, 1, 2500000.00),
-(31, 17, 2, 2500000.00);
+(31, 17, 2, 2500000.00),
+(32, 18, 1, 2500000.00),
+(33, 18, 2, 2500000.00),
+(34, 19, 3, 2200000.00),
+(35, 20, 4, 800000.00),
+(36, 21, 1, 2500000.00),
+(37, 22, 2, 2500000.00);
 
 -- --------------------------------------------------------
 
@@ -186,8 +194,9 @@ INSERT INTO `chucnang` (`MaChucNang`, `TenChucNang`) VALUES
 (9, 'Quản lý người dùng'),
 (10, 'Quản lý phân quyền'),
 (11, 'Tra cứu sản phẩm'),
-(12, 'Quản lý đánh giá');
-
+(12, 'Quản lý đánh giá'),
+(13, 'Thống kê & báo cáo'),
+(14, 'Quản lý đánh giá');
 -- --------------------------------------------------------
 
 --
@@ -216,8 +225,14 @@ CREATE TABLE `danhmuc` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `danhmuc`
+-- Đang đổ dữ liệu cho bảng `danhgia`
 --
+
+INSERT INTO `danhgia` (`MaDanhGia`, `MaHangHoa`, `MaNguoiDung`, `Diem`, `NoiDung`, `TrangThai`, `NgayDanhGia`) VALUES
+(1, 1, 9, 5, 'Giày rất tốt, chất lượng cao!', 'Đã duyệt', '2025-11-27 15:00:00'),
+(2, 2, 9, 4, 'Đá bóng ổn, nhưng hơi nặng.', 'Đã duyệt', '2025-11-27 16:00:00'),
+(3, 3, 3, 5, 'Giày thể thao tuyệt vời!', 'Đã duyệt', '2025-11-27 17:00:00'),
+(4, 4, 10, 3, 'Dép bình thường.', 'Chưa duyệt', '2025-11-27 18:00:00');
 
 INSERT INTO `danhmuc` (`MaDanhMuc`, `TenDanhMuc`) VALUES
 (4, 'Dép'),
@@ -254,7 +269,12 @@ INSERT INTO `donhang` (`MaDonHang`, `MaNguoiDung`, `NgayTao`, `TrangThai`, `Tong
 (13, 1, '2025-10-12 23:05:22', 'Đang xử lý', 7500000.00, 'TP. Hồ Chí Minh', 'Quận 1', 'Phường Bến Nghé', '12 Nguyễn Huệ', 'COD', '0909123456'),
 (15, 1, '2025-10-12 23:07:40', 'Đang xử lý', 2500000.00, 'TP. Hồ Chí Minh', 'Quận 1', 'Phường Bến Nghé', '12 Nguyễn Huệ', 'COD', '0909123456'),
 (16, 1, '2025-10-12 23:17:39', 'Đang xử lý', 2500000.00, 'TP. Hồ Chí Minh', 'Quận 1', 'Phường Bến Nghé', '12 Nguyễn Huệ', 'COD', '0909123456'),
-(17, 1, '2025-10-12 23:18:10', 'Đang xử lý', 2500000.00, 'TP. Hồ Chí Minh', 'Quận 1', 'Phường Bến Nghé', '12 Nguyễn Huệ', 'COD', '0909123456');
+(17, 1, '2025-10-12 23:18:10', 'Đang xử lý', 2500000.00, 'TP. Hồ Chí Minh', 'Quận 1', 'Phường Bến Nghé', '12 Nguyễn Huệ', 'COD', '0909123456'),
+(18, 9, '2025-11-27 10:00:00', 'Đã giao', 5000000.00, 'TP. Hồ Chí Minh', 'Quận 3', 'Phường Võ Thị Sáu', '123 Lê Văn Sỹ', 'COD', '0909123456'),
+(19, 9, '2025-11-27 11:00:00', 'Đang xử lý', 3000000.00, 'TP. Hồ Chí Minh', 'Quận 3', 'Phường Võ Thị Sáu', '123 Lê Văn Sỹ', 'Thẻ tín dụng', '0909123456'),
+(20, 3, '2025-11-27 12:00:00', 'Đã giao', 2200000.00, 'TP. Đà Nẵng', 'Quận Hải Châu', 'Phường Thạch Thang', '456 Trần Phú', 'COD', '0922222222'),
+(21, 10, '2025-11-27 13:00:00', 'Đang xử lý', 800000.00, NULL, NULL, NULL, NULL, 'COD', '0922222222'),
+(22, 11, '2025-11-27 14:00:00', 'Đã giao', 750000.00, NULL, NULL, NULL, NULL, 'COD', '0922222222');
 
 -- --------------------------------------------------------
 
@@ -447,8 +467,9 @@ INSERT INTO `phanquyen` (`MaQuyen`, `MaChiTietChucNang`, `TrangThai`) VALUES
 (1, 33, 'Mở'),
 (1, 34, 'Mở'),
 (1, 35, 'Mở'),
-(1, 36, 'Mở');
-
+(1, 36, 'Mở'),
+(1, 37, 'Mở'),
+(1, 38, 'Mở');
 -- --------------------------------------------------------
 
 --
@@ -549,10 +570,12 @@ CREATE TABLE `sanpham` (
 --
 
 INSERT INTO `sanpham` (`MaSanPham`, `MaChiTietPhieuNhap`, `Seri`, `TrangThai`) VALUES
-(1, 1, 'HEHE', 'Chờ duyệt'),
-(2, 1, 'HAHA', 'Chờ duyệt'),
-(3, 2, 'HIHI', 'Chưa bán'),
-(4, 2, 'HOHO', 'Chưa bán');
+(1, 1, 'HEHE', 'Đã bán'),
+(2, 1, 'HAHA', 'Đã bán'),
+(3, 2, 'HIHI', 'Đã bán'),
+(4, 2, 'HOHO', 'Đã bán'),
+(5, 1, 'SERI001', 'Chưa bán'),
+(6, 2, 'SERI002', 'Chưa bán');
 
 -- --------------------------------------------------------
 
@@ -739,7 +762,7 @@ ALTER TABLE `chitietchucnang`
 -- AUTO_INCREMENT cho bảng `chitietdonhang`
 --
 ALTER TABLE `chitietdonhang`
-  MODIFY `MaChiTiet` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
+  MODIFY `MaChiTiet` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
 
 --
 -- AUTO_INCREMENT cho bảng `chitietphieunhap`
@@ -757,7 +780,7 @@ ALTER TABLE `chucnang`
 -- AUTO_INCREMENT cho bảng `danhgia`
 --
 ALTER TABLE `danhgia`
-  MODIFY `MaDanhGia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `MaDanhGia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT cho bảng `danhmuc`
@@ -769,7 +792,7 @@ ALTER TABLE `danhmuc`
 -- AUTO_INCREMENT cho bảng `donhang`
 --
 ALTER TABLE `donhang`
-  MODIFY `MaDonHang` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `MaDonHang` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT cho bảng `hang`
@@ -823,7 +846,7 @@ ALTER TABLE `refreshtoken`
 -- AUTO_INCREMENT cho bảng `sanpham`
 --
 ALTER TABLE `sanpham`
-  MODIFY `MaSanPham` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `MaSanPham` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT cho bảng `thanhtoanonline`
